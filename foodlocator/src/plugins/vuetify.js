@@ -4,11 +4,10 @@
  * Framework documentation: https://vuetifyjs.com`
  */
 
-// Styles
+//import this after install `@mdi/font` package
 import '@mdi/font/css/materialdesignicons.css'
-import 'vuetify/styles'
 
-// Vuetify
+import 'vuetify/styles'
 import { createVuetify } from 'vuetify'
 
 // Components

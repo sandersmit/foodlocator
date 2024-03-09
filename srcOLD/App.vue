@@ -20,11 +20,11 @@
 
       <section id="hero">
         <v-pagination
-         v-model="page"
-         :length="15"
-         :total-visible="7"
-         rounded="0"
-         />
+          v-model="page"
+          :length="15"
+          :total-visible="7"
+          rounded="0"
+        />
         <v-sheet
           class="d-flex align-center pb-16"
           color="grey-darken-3"
