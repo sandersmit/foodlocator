@@ -17,6 +17,7 @@
     "webfontloader": "^1.0.0"
   },
   "devDependencies": {
+    "@types/leaflet": "^1.9.8",
     "@vitejs/plugin-vue": "^5.0.4",
     "eslint": "^8.57.0",
     "eslint-config-standard": "^17.0.0",

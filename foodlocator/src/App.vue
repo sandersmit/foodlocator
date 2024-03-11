@@ -1,15 +1,35 @@
 <script setup lang="ts">
-import { ref, onMounted} from 'vue'
+import { ref, defineProps } from 'vue'
 
-const foodcollected = ref(0)
+
 
 import MapComp from './components/MapComp.vue'
+import BannerComp from './components/BannerComp.vue'
+
+const props =  defineProps({
+    emitedValueProp: {
+        type:Object,
+        required: false
+    }
+});
+
+//One-Way Data Flow - converted the prop to ref for reactive value 
+//from other child comp
+const emitedValuePropRef = ref(props.emitedValueProp)
+
+//METHODS
+function emitPositionValue(argument){
+  console.log( "Latitude: " + argument.coords.latitude +
+    "Longitude:" + argument.coords.longitude)
+    emitedValuePropRef.value = argument
+}
 </script>
 
 <template>
-   <MapComp msg="mapcomponent" />
+
+  <MapComp msg="mapcomponent" :initmapvalue="emitedValuePropRef" />
   <v-app>
-    <!-- <v-app-bar>
+    <v-app-bar>
       <v-container class="d-flex align-center py-0">
         <v-app-bar-title class="pl-0">
           <div class="d-flex align-center">
@@ -19,112 +39,122 @@ import MapComp from './components/MapComp.vue'
               image="https://cdn.vuetifyjs.com/docs/images/logos/v.png"
             />
 
-            Vuetify 3
+            Foodlocator
           </div>
        
         </v-app-bar-title>
       </v-container>
-    </v-app-bar> -->
-   
+    </v-app-bar>
+
     <v-main>
-      <v-form v-model="valid">
-    <v-container>
-      <v-row>
-        <v-col
-          cols="12"
-          md="4"
-        >
-          <v-text-field
-            v-model="firstname"
-            :counter="10"
-            :rules="nameRules"
-            label="Land"
-            hide-details
-            required
-          ></v-text-field>
-        </v-col>
+     
+      <BannerComp @emit-position-value="emitPositionValue" class="mb-5"/>
+     
+      <v-form @submit.prevent>
+        <v-container>
+          <h4 class="text-h5 pb-5">
+                  Insert new world foodIngredient
+                  </h4>
+          <v-row>
+            <v-col cols="12" md="3">
+              <v-text-field label="Food ingredient name" clearable
+                required></v-text-field>
+            </v-col>
 
-        <v-col
-          cols="12"
-          md="4"
-        >
-          <v-text-field
-            v-model="lastname"
-            :counter="10"
-            :rules="nameRules"
-            label="Stad"
-            hide-details
-            required
-          ></v-text-field>
-        </v-col>
+            <v-col cols="12" md="3">
+                <v-autocomplete
+                clearable
+                label="Food category"
+                :items="['California', 'Colorado', 'Florida', 'Georgia', 'Texas', 'Wyoming']"
+              ></v-autocomplete>
+            </v-col>
 
-        <v-col
-          cols="12"
-          md="4"
-        >
-          <v-text-field
-            v-model="email"
-            :rules="emailRules"
-            label="Naam"
-            hide-details
-            required
-          ></v-text-field>
-        </v-col>
-      </v-row>
-    </v-container>
-  </v-form>
+            <v-col cols="12" md="3">
+              <v-autocomplete
+                clearable
+                label="Land of origin"
+                :items="['California', 'Colorado', 'Florida', 'Georgia', 'Texas', 'Wyoming']"
+              ></v-autocomplete>
+            </v-col>
+            <v-col cols="12" md="3">
+              <v-btn type="submit" block>Submit</v-btn>
+            </v-col>
+          </v-row>
+        </v-container>
+      </v-form>
+      <v-form v-model="valid"  @submit.prevent>
+        <v-container>
+          <h4 class="text-h5 pb-5">
+                  Find existing world food
+          </h4>
+          <v-row>
+            <v-col cols="12" md="4">
+            <v-combobox
+              label="Food ingredient name"
+              :items="['California', 'Colorado', 'Florida', 'Georgia', 'Texas', 'Wyoming']"
+            ></v-combobox>
+            </v-col>
+            <v-col cols="12" md="4">
+              <v-autocomplete
+                clearable
+                label="Land of origin"
+                :items="['California', 'Colorado', 'Florida', 'Georgia', 'Texas', 'Wyoming']"
+              ></v-autocomplete>
+            </v-col>
+            <v-col cols="12" md="4">
+              <v-btn type="submit" block>Search</v-btn>
+            </v-col>
+          </v-row>
+        </v-container>
+      </v-form>
       <section id="hero">
-        <v-sheet
-          class="d-flex align-center pb-16"
-          color="grey-darken-3"
-        >
+        <v-sheet class="d-flex align-center pb-16" color="grey-darken-3">
           <v-container class="text-center">
-              <v-row justify="space-between">
-                <v-col cols="auto">
-                    <v-responsive class="mx-auto"  max-width="250">
-                      <v-img
-                          src="https://cdn.vuetifyjs.com/docs/images/logos/v.png"
-                          height="400"
-                        />
-                      <h3 class="text-h3">
-                      Locate food everywhere!
-                      </h3>
-                      <p class="mt-4 text-medium-emphasis">
-                        This is a basic Vuetify 3 application designed to help get your feet wet with the next version of the framework. Visit our <a href="https://next.vuetifyjs.com/" target="_blank" rel="noopener noreferrer">documentation</a> for more information.
-                      </p>
-                    </v-responsive> 
-                  </v-col>
-                  <v-col cols="auto">
-                    <v-responsive class="mx-auto"  max-width="250">
-                      <v-img
-                          src="https://cdn.vuetifyjs.com/docs/images/logos/v.png"
-                          height="400"
-                        />
-                      <h3 class="text-h3">
-                      Locate food everywhere!
-                      </h3>
-                      <p class="mt-4 text-medium-emphasis">
-                        This is a basic Vuetify 3 application designed to help get your feet wet with the next version of the framework. Visit our <a href="https://next.vuetifyjs.com/" target="_blank" rel="noopener noreferrer">documentation</a> for more information.
-                      </p>
-                    </v-responsive> 
-                  </v-col>
-                 
-                  <v-col cols="auto">
-                    <v-responsive width="250">
-                      <v-img
-                      height="400"
-                          src="https://cdn.vuetifyjs.com/store/themes/vite-free/chips-bar.png"
-                        />
-                    </v-responsive> 
-                  </v-col>
+            <v-row justify="space-between">
+              <v-col cols="auto">
+                <v-responsive class="mx-auto mt-4" max-width="250">
+                  <v-img max-width="400" src="https://cdn.vuetifyjs.com/store/themes/vite-free/slider.png" />
+                  <h3 class="text-h3 mt-4">
+                   Step1
+                  </h3>
+                  <p class="mt-4 text-medium-emphasis">
+                    This is a basic Vuetify 3 application designed to help get your feet wet with the next version of
+                    the framework. Visit our <a href="https://next.vuetifyjs.com/" target="_blank"
+                      rel="noopener noreferrer">documentation</a> for more information.
+                  </p>
+                </v-responsive>
+              </v-col>
+              <v-col cols="auto">
+                <v-responsive class="mx-auto mt-4" max-width="250">
+                  <v-img max-width="400" src="https://cdn.vuetifyjs.com/store/themes/vite-free/slider.png" />
+                  <h3 class="text-h3 mt-4" >
+                    Step2
+                  </h3>
+                  <p class="mt-4 text-medium-emphasis">
+                    This is a basic Vuetify 3 application designed to help get your feet wet with the next version of
+                    the framework. Visit our <a href="https://next.vuetifyjs.com/" target="_blank"
+                      rel="noopener noreferrer">documentation</a> for more information.
+                  </p>
+                </v-responsive>
+              </v-col>
+
+              <v-col cols="auto">
+                <v-responsive width="250" class="mx-auto mt-4" max-width="250">
+                  <v-img max-width="400" src="https://cdn.vuetifyjs.com/store/themes/vite-free/slider.png" />
+                  <h3 class="text-h3 mt-4">
+                    Step3
+                  </h3>
+                  <p class="mt-4 text-medium-emphasis">
+                    This is a basic Vuetify 3 application designed to help get your feet wet with the next version of
+                    the framework. Visit our <a href="https://next.vuetifyjs.com/" target="_blank"
+                      rel="noopener noreferrer">documentation</a> for more information.
+                  </p>
+                </v-responsive>
+              </v-col>
             </v-row>
           </v-container>
         </v-sheet>
-        <v-pagination
-          :length="15"
-          :total-visible="7"
-          rounded="0"
-        />
+        <v-pagination :length="15" :total-visible="7" rounded="0" />
       </section>
 
       <v-sheet class="py-16">
@@ -146,31 +176,25 @@ import MapComp from './components/MapComp.vue'
                   </strong>
 
                   <p class="mt-8">
-                    Vuetify 3 has an unprecedented level of customization options that make implementing any design system easy.
+                    Vuetify 3 has an unprecedented level of customization options that make implementing any design
+                    system easy.
                   </p>
 
                   <p class="mt-8">
                     Assign default values for all components in the library, including nested support.
                   </p>
 
-                  <v-btn
-                    class="mt-6"
-                    href="https://next.vuetifyjs.com/features/global-configuration/"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                  >
+                  <v-btn class="mt-6" href="https://next.vuetifyjs.com/features/global-configuration/" target="_blank"
+                    rel="noopener noreferrer">
                     More Information
                   </v-btn>
                 </v-responsive>
               </v-col>
               <v-col cols="auto">
                 <v-responsive width="350">
-                  <v-img
-                    max-width="400"
-                    src="https://cdn.vuetifyjs.com/store/themes/vite-free/chips-bar.png"
-                  />
-                  </v-responsive>
-                </v-col>
+                  <v-img max-width="400" src="https://cdn.vuetifyjs.com/store/themes/vite-free/chips-bar.png" />
+                </v-responsive>
+              </v-col>
             </v-row>
           </v-container>
         </section>
@@ -193,30 +217,25 @@ import MapComp from './components/MapComp.vue'
                   </p>
 
                   <p class="mt-3">
-                    Vuetify 3 uses the Vue composition API to build easy-to-use and feature rich components that work out of the box.
+                    Vuetify 3 uses the Vue composition API to build easy-to-use and feature rich components that work
+                    out of the box.
                   </p>
 
                   <p class="mt-8">
                     <strong>How to use:</strong>
 
-                    Services are now accessed through <strong>use functions</strong> that follow the Vue 3 nomenclature and code styling.
+                    Services are now accessed through <strong>use functions</strong> that follow the Vue 3 nomenclature
+                    and code styling.
                   </p>
 
-                  <v-btn
-                    class="mt-6"
-                    href="https://next.vuetifyjs.com/introduction/why-vuetify/"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                  >
+                  <v-btn class="mt-6" href="https://next.vuetifyjs.com/introduction/why-vuetify/" target="_blank"
+                    rel="noopener noreferrer">
                     More Information
                   </v-btn>
                 </v-responsive>
               </v-col>
 
-              <v-img
-                max-width="400"
-                src="https://cdn.vuetifyjs.com/store/themes/vite-free/slider.png"
-              />
+              <v-img max-width="400" src="https://cdn.vuetifyjs.com/store/themes/vite-free/slider.png" />
             </v-row>
           </v-container>
         </section>
@@ -252,27 +271,18 @@ import MapComp from './components/MapComp.vue'
                 </v-responsive>
               </v-col>
 
-              <v-img
-                max-width="400"
-                src="https://cdn.vuetifyjs.com/store/themes/vite-free/layout.png"
-              />
+              <v-img max-width="400" src="https://cdn.vuetifyjs.com/store/themes/vite-free/layout.png" />
             </v-row>
           </v-container>
         </section>
       </v-sheet>
 
-      <v-sheet
-        class="py-16"
-        color="#181818"
-      >
+      <v-sheet class="py-16" color="#181818">
         <section id="grid">
           <v-container>
             <v-row justify="space-between">
               <v-col cols="auto">
-                <v-responsive
-                  class="overflow-visible"
-                  width="350"
-                >
+                <v-responsive class="overflow-visible" width="350">
                   <h2 class="text-h4">
                     Shape the future of Vuetify
                   </h2>
@@ -284,15 +294,13 @@ import MapComp from './components/MapComp.vue'
                   <strong>Become a sponsor</strong>
 
                   <p class="mt-8">
-                    Vuetify is free to use software under the <a href="https://opensource.org/licenses/MIT" target="_blank" rel="noopener noreferrer">MIT</a> License and requires an extensive amount of time to maintain. Supporting development ensures Vuetify will be actively maintained.
+                    Vuetify is free to use software under the <a href="https://opensource.org/licenses/MIT"
+                      target="_blank" rel="noopener noreferrer">MIT</a> License and requires an extensive amount of time
+                    to maintain. Supporting development ensures Vuetify will be actively maintained.
                   </p>
 
-                  <v-btn-alt
-                    class="mt-6 "
-                    href="https://github.com/sponsors/johnleider"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                  >
+                  <v-btn-alt class="mt-6 " href="https://github.com/sponsors/johnleider" target="_blank"
+                    rel="noopener noreferrer">
                     Support now
                   </v-btn-alt>
                 </v-responsive>
@@ -314,7 +322,7 @@ import MapComp from './components/MapComp.vue'
     </v-footer>
   </v-app>
 
- 
+
 </template>
 
 <style scoped>
@@ -324,9 +332,11 @@ import MapComp from './components/MapComp.vue'
   will-change: filter;
   transition: filter 300ms;
 }
+
 .logo:hover {
   filter: drop-shadow(0 0 2em #646cffaa);
 }
+
 .logo.vue:hover {
   filter: drop-shadow(0 0 2em #42b883aa);
 }

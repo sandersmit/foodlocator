@@ -5,7 +5,7 @@ import { createApp } from 'vue'
 // import 'vuetify/styles'
 // import '@mdi/font/css/materialdesignicons.css'
 
-// import 'vuetify/styles'
+import './style.css'
 //import { createVuetify } from 'vuetify'
 import { registerPlugins } from './plugins'
 import vuetify from './plugins/vuetify'

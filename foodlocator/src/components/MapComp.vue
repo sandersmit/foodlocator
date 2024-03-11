@@ -1,65 +1,100 @@
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
+import { computed ,ref, onMounted, onUpdated } from 'vue'
 import L from "leaflet"
 import 'leaflet/dist/leaflet.css'
 
-defineProps<{ msg: string }>()
+// defineProps<{ msg: string }>()
+const props =  defineProps({
+  msg: {
+       type:String,
+       required: true
+   },
+   initmapvalue:{
+    type:String,
+       required: false
+   }
+});
 
-const count = ref(0)
+//Reactives
+let map = ref()
+
 
 //METHODS
+
 function initMap() {
-	const map = L.map('map').setView([51.505, -0.09], 13);
-  const tiles = L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+
+  if (map.value != null)
+  {
+    console.log("remove existing map")
+    map.value .remove();
+    buildMap()  
+  }else{
+    console.log("add new map")
+    buildMap()
+  }
+
+function buildMap(){
+  map.value  = L.map('map').setView(computeInitPosition.value, 13);
+    const tiles = L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
     maxZoom: 19,
     attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>'
-  }).addTo(map);
-
-const marker = L.marker([51.5, -0.09]).addTo(map)
-  .bindPopup('<b>Hello world!</b><br />I am a popup.').openPopup();
-
-const circle = L.circle([51.508, -0.11], {
-  color: 'red',
-  fillColor: '#f03',
-  fillOpacity: 0.5,
-  radius: 500
-}).addTo(map).bindPopup('I am a circle.');
-
-const polygon = L.polygon([
-  [51.509, -0.08],
-  [51.503, -0.06],
-  [51.51, -0.047]
-]).addTo(map).bindPopup('I am a polygon.');
-
-
-const popup = L.popup()
-  .setLatLng([51.513, -0.09])
-  .setContent('I am a standalone popup.')
-  .openOn(map);
-
-function onMapClick(e) {
-  popup.setLatLng(e.latlng).setContent(`You clicked the map at ${e.latlng.toString()}`)
-    .openOn(map);
+  }).addTo(map.value);
 }
 
-map.on('click', onMapClick);
+  const marker = L.marker(computeInitPosition.value).addTo(map.value)
+    .bindPopup('<b>Hello world!</b><br />I am a popup.').openPopup();
+
+  const circle = L.circle(computeInitPosition.value, {
+    color: 'red',
+    fillColor: '#f03',
+    fillOpacity: 0.5,
+    radius: 500
+  }).addTo(map.value).bindPopup('I am a circle.');
+
+
+  const popup = L.popup()
+    .setLatLng(computeInitPosition.value)
+    .setContent('I am a standalone popup.')
+    .openOn(map.value);
+
+  function onMapClick(e) {
+    popup.setLatLng(e.latlng).setContent(`You clicked the map at ${e.latlng.toString()}`)
+      .openOn(map.value);
+  }
+
+  map.value.on('click', onMapClick);
 }
 
-onMounted(() => {
-  initMap()
+//COMPUTED
+const computeInitPosition = computed(function(){
+  
+  if (props.initmapvalue) {
+    console.log("props.initmapvalue", props.initmapvalue)
+    return [props.initmapvalue.coords.latitude,props.initmapvalue.coords.longitude]
+  } else {
+    const defaultPosition = [51.505, -0.09];
+    return defaultPosition
+  }  
+  
 })
 
-
+onMounted(() => {
+  console.log("onMounted")
+  initMap()
+})
+onUpdated(() => {
+  console.log("onUpdated")
+  initMap()
+})
 </script>
 
 <template>
-  <div id="map" class="mapcomp">
-  <h1>{{ msg }}</h1>
-</div>
+  <div id="map" class="mapcomp mt-15"> 
+  </div>
 </template>
 
 <style scoped>
- .mapcomp{
+.mapcomp {
   color: #fff;
   height: 50vh;
 }
