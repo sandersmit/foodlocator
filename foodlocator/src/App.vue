@@ -1,10 +1,14 @@
 <script setup lang="ts">
-import { ref, defineProps } from 'vue'
+import { ref } from 'vue'
+import { useFoodDataStore } from './stores/DataFoodStore';
+import { storeToRefs } from "pinia"; 
 
 
 
 import MapComp from './components/MapComp.vue'
 import BannerComp from './components/BannerComp.vue'
+
+
 
 const props =  defineProps({
     emitedValueProp: {
@@ -16,18 +20,29 @@ const props =  defineProps({
 //One-Way Data Flow - converted the prop to ref for reactive value 
 //from other child comp
 const emitedValuePropRef = ref(props.emitedValueProp)
+const foodDataStore = useFoodDataStore();
+
 
 //METHODS
 function emitPositionValue(argument){
+  console.log( foodDataStore.reactiveCountryOrgins)
   console.log( "Latitude: " + argument.coords.latitude +
     "Longitude:" + argument.coords.longitude)
     emitedValuePropRef.value = argument
 }
+function fetchFoodData(){
+  foodDataStore.fetchcuisine()
+}
 </script>
 
 <template>
+<div class="mt-15">
+  {{ foodDataStore.getFoodDataByCuisine.length }}
+{{ foodDataStore.getFoodDataByCuisine }}
+</div>
 
   <MapComp msg="mapcomponent" :initmapvalue="emitedValuePropRef" />
+ 
   <v-app>
     <v-app-bar>
       <v-container class="d-flex align-center py-0">
@@ -49,7 +64,31 @@ function emitPositionValue(argument){
     <v-main>
      
       <BannerComp @emit-position-value="emitPositionValue" class="mb-5"/>
-     
+      <v-form  @submit.prevent>
+        <v-container>
+          <h4 class="text-h5 pb-5">
+                  Find existing world food
+          </h4>
+          <v-row>
+            <v-col cols="12" md="4">
+            <v-combobox
+              label="Food ingredient name"
+              :items="['California', 'Colorado', 'Florida', 'Georgia', 'Texas', 'Wyoming']"
+            ></v-combobox>
+            </v-col>
+            <v-col cols="12" md="4">
+              <v-autocomplete
+                clearable
+                label="Land of origin"
+                :items="['California', 'Colorado', 'Florida', 'Georgia', 'Texas', 'Wyoming']"
+              ></v-autocomplete>
+            </v-col>
+            <v-col cols="12" md="4">
+              <v-btn type="submit" @click="fetchFoodData()" block>Search</v-btn>
+            </v-col>
+          </v-row>
+        </v-container>
+      </v-form>
       <v-form @submit.prevent>
         <v-container>
           <h4 class="text-h5 pb-5">
@@ -82,31 +121,7 @@ function emitPositionValue(argument){
           </v-row>
         </v-container>
       </v-form>
-      <v-form v-model="valid"  @submit.prevent>
-        <v-container>
-          <h4 class="text-h5 pb-5">
-                  Find existing world food
-          </h4>
-          <v-row>
-            <v-col cols="12" md="4">
-            <v-combobox
-              label="Food ingredient name"
-              :items="['California', 'Colorado', 'Florida', 'Georgia', 'Texas', 'Wyoming']"
-            ></v-combobox>
-            </v-col>
-            <v-col cols="12" md="4">
-              <v-autocomplete
-                clearable
-                label="Land of origin"
-                :items="['California', 'Colorado', 'Florida', 'Georgia', 'Texas', 'Wyoming']"
-              ></v-autocomplete>
-            </v-col>
-            <v-col cols="12" md="4">
-              <v-btn type="submit" block>Search</v-btn>
-            </v-col>
-          </v-row>
-        </v-container>
-      </v-form>
+     
       <section id="hero">
         <v-sheet class="d-flex align-center pb-16" color="grey-darken-3">
           <v-container class="text-center">
