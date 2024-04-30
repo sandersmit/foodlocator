@@ -1,5 +1,14 @@
 <script setup lang="ts">
-import { ref, reactive, onMounted } from 'vue'
+import { ref, reactive, computed, onMounted, defineProps } from 'vue'
+
+
+// defineProps<{ msg: string }>()
+const props =  defineProps({
+  initPosDataProp: {
+       type:Object,
+       required: true
+   }
+});
 
 const activeBannerRef = ref(true)
 const data = reactive({
@@ -7,8 +16,6 @@ const data = reactive({
 })
 
 const emit = defineEmits(['emit-position-value'])
-
-
 
 //METHODS
 function positionValueEmit() {
@@ -28,34 +35,43 @@ function positionValueEmit() {
 }
 
 
+const computeinitPosData = computed(function(){
+  if (props.initPosDataProp) {
+     for(var key in props.initPosDataProp[0]) {
+      //returning city name
+          return props.initPosDataProp[0].name
+        } 
+    }else{
+      return "nothing"
+    } 
+})
+
 onMounted(() => {
   //initLocation()
 })
-
 
 </script>
 
 <template>
   <Transition>
-    <div v-if="activeBannerRef">
-      <v-banner class="custBanner" color="warning" icon="mdi-map-marker" lines="one">
+    <!-- <div v-if="activeBannerRef"> -->
+      <v-banner v-if="activeBannerRef" class="custBanner" color="warning" icon="mdi-map-marker" lines="one">
         <template v-slot:text>
-          This app rquires the location of the user, choose to Confirm or Cancel to use default
+          This app rquires the location of the user, choose to Confirm or Cancel to use default {{ computeinitPosData }}
         </template>
-
         <template v-slot:actions>
           <v-btn @click="positionValueEmit">Confirm</v-btn>
           <v-btn @click="activeBannerRef = false">Cancel</v-btn>
         </template>
       </v-banner>
-    </div>
-    <div v-else>
-      <v-banner class="custBanner" color="success" icon="mdi-map-marker" lines="one">
+    <!-- </div>
+    <div v-else> -->
+      <v-banner v-else id="custbanner" class="custBanner" color="success" icon="mdi-map-marker" lines="one">
         <template v-slot:text>
-          Current location : {{ data.currentposition.coords.latitude, data.currentposition.coords.longitude }}
+          {{ computeinitPosData }} is your current location : {{ data.currentposition.coords.latitude}} and {{data.currentposition.coords.longitude }}
         </template>
       </v-banner>
-    </div>
+    <!-- </div> -->
   </Transition>
 </template>
 
@@ -70,8 +86,8 @@ onMounted(() => {
   opacity: 0;
 }
 .custBanner{
-  position:absolute;
-  top:0px;
+  // position:absolute;
+  // top:0px;
 }
 
 </style>

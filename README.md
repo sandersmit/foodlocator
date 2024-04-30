@@ -131,6 +131,19 @@ If you have questions or need help integrating the product please reach out in [
 
 <br>
 
+## Project Context
+
+app for the location of food. 
+Geo food based information 
+
+location = foodinfo
+
+Country -> foods 
+Location -> restaurants
+City -> Producers
+
+
+
 <p align="center">
   <img src="https://cdn.vuetifyjs.com/docs/images/logos/v.png" height="128">
 </p>
