@@ -31,6 +31,23 @@ export const useFoodDataStore = defineStore("FoodDataStore", {
         "british",
         "irish",
         "french",
+        "Asian",
+        "American",
+        "Cajun",
+        "Caribbean",
+        "Eastern European",
+        "European", 
+        "German",
+        "Greek",
+        "Italian",
+        "Jewish",
+        "Latin American",
+        "Mediterranean",
+        "Mexican",
+        "Middle Eastern",
+        "Nordic",
+        "Southern",
+        "Spanish",
       ],
       clusterPositions: [
         // [ 52.35303643511911, 4.895095825195313, "1 Amsterdam"],
@@ -46,49 +63,11 @@ export const useFoodDataStore = defineStore("FoodDataStore", {
         [53.2082473529397, 6.557464599609376, "11 Groningen"],
         [53.199451902831555, 5.770568847656251, "12 Leeuwarden"],
       ],
-      customGeoData: [
-        {
-          countryIso: "NL",
-          cuisineName: "Asian",
-        },
-        {
-          countryIso: ["CF"],
-          cuisineName: "African",
-        },
-
-        // Asian
-        // American
-        // British
-        // Cajun
-        // Caribbean
-        // Chinese
-        // Eastern European
-        // European
-        // French
-        // German
-        // Greek
-        // Indian
-        // Irish
-        // Italian
-        // Japanese
-        // Jewish
-        // Korean
-        // Latin American
-        // Mediterranean
-        // Mexican
-        // Middle Eastern
-        // Nordic
-        // Southern
-        // Spanish
-        // Thai
-        // Vietnamese
-      ],
-
       //reactiveDataSet
-      allFilteredTitles: [],
       reactiveFoodCuising: [],
       reactiveClickedPosData: [],
       reactiveClickedPosCatData: [],
+      searchedCountryFoodData: [],
       reactivePositionData: [],
       reactiveOrigonPosData: [],
       reactiveCountryPosData:[],
@@ -97,8 +76,8 @@ export const useFoodDataStore = defineStore("FoodDataStore", {
       reactiveFoodMenuDetails: [],
       reactiveAllApiMenuDetails: [],
       reactviefoodOrigin: [],
-      reactiveCountries: [],
-      allCountries: [],
+      reactiveCountrieData: [],
+      allCountryNames: [],
     };
   },
   //Getters are synchronous functions used to retrieve data from the state
@@ -106,7 +85,7 @@ export const useFoodDataStore = defineStore("FoodDataStore", {
     getFoodDataByCuisine: function (state) {
       //return this.reactiveFoodCuising.results
       for (var key in this.reactiveFoodCuising.results) {
-        console.log(this.reactiveFoodCuising.results[key].title);
+        // console.log(this.reactiveFoodCuising.results[key].title);
         state.reactviefoodTitles.push(
           this.reactiveFoodCuising.results[key].title
         );
@@ -116,15 +95,18 @@ export const useFoodDataStore = defineStore("FoodDataStore", {
     getFoodPositionDataByClick: function (state) {
       return this.reactiveClickedPosData;
     },
+    getSearchedCountryFood: function (state) {
+      console.log(this.searchedCountryFoodData.ok, this.searchedCountryFoodData )
+      return this.searchedCountryFoodData
+    },
     getFoodPositionCatDataByClick: function (state) {
       //loop over object with
-
       for (var key in this.reactiveClickedPosCatData.results) {
         //result
         Object.entries(this.reactiveClickedPosCatData.results[key]).forEach(
           ([key1, value]) => {
             if (key1 == "poi") {
-              console.log(value.name);
+              // console.log(value.name);
               //push into new state array
               state.reactiveClickedCatTitles.push(value.name);
             }
@@ -139,12 +121,16 @@ export const useFoodDataStore = defineStore("FoodDataStore", {
     getCountryPositionData: function (state) {
       for (var key in this.reactiveCountryPosData.results) {
         //result
-        console.log( this.reactiveCountryPosData.results[key].position);
+        console.log( "getCountryPositionData:", this.reactiveCountryPosData.results[key].position);
        // this.reactiveFoodCuising.results[key]
-       return this.reactiveCountryPosData.results[key].position
+       if (this.reactiveCountryPosData.results[key].position) {
+        return this.reactiveCountryPosData.results[key].position
+       } else {
+        return {lat:"100",lon:"40"}
+       }
+       
       }
     },
-
     getAllApiFoodOrigins: function (state) {
       //console.log("getAllApiFoodMenuTitles")
       for (var key in this.reactiveAllApiMenuDetails.meals) {
@@ -155,23 +141,23 @@ export const useFoodDataStore = defineStore("FoodDataStore", {
       return state.reactviefoodOrigin;
     },
     getAllCoutriesApi: function (state) {
-      console.log("getAllCoutriesApi--");
-      for (var key in this.reactiveCountries.data) {
-        console.log(
-          "loop this.reactiveCountries.data.countries",
-          this.reactiveCountries.data.countries
-        );
-        // state.allCountries.push(this.reactiveCountries.data.countries)
-        return this.reactiveCountries.data.countries;
+      console.log("getAllCoutriesApi");
+      for (var key in this.reactiveCountrieData.data) {
+        this.reactiveCountrieData.data.countries.forEach(
+             element => {
+              //console.log(element.name)
+              state.allCountryNames.push(element.name)
+          });
+        console.log(this.reactiveCountrieData.data.countries)
+        return this.reactiveCountrieData.data.countries;
       }
-      // return this.allCountries;
     },
   },
   //Actions are functions that can also be asynchronous which are used to update the state
   //For Mutating items within the store state, use actions
   actions: {
     async fetchcuisine(param) {
-      console.log("fetchcuisine()", param);
+      console.log("fetchcuisine?")
       const params = {
         apikey: "8c12d249836f4974861f860603695b21",
         cuisine: param.currentLandOrigin,
@@ -184,7 +170,7 @@ export const useFoodDataStore = defineStore("FoodDataStore", {
       //fetching fetchFoodCategorie
       return (this.reactiveFoodCuising = await fetch(url, options)
         .then(function (response) {
-          console.log(response);
+          // console.log(response);
           return response.json();
         })
         .catch((error) => {
@@ -209,7 +195,7 @@ export const useFoodDataStore = defineStore("FoodDataStore", {
 
       return (this.reactiveOrigonPosData = await fetch(url, options)
         .then(function (response) {
-          console.log(response);
+          //console.log(response);
           return response.json();
         })
         .catch((error) => {
@@ -223,7 +209,7 @@ export const useFoodDataStore = defineStore("FoodDataStore", {
         targetClickedPos: param,
       };
       console.log(
-        "fetchFoodOriginPosition()",
+        "fetchFoodOriginClickedPosition()",
         params.targetClickedPos.coords.latitude,
         params.targetClickedPos.coords.longitude
       );
@@ -235,6 +221,30 @@ export const useFoodDataStore = defineStore("FoodDataStore", {
       return (this.reactiveClickedPosData = await fetch(url, options)
         .then(function (response) {
           console.log(response);
+          return response.json();
+        })
+        .catch((error) => {
+          //request failed
+          console.log("error", error);
+        }));
+    },
+    async fetchSearchCountryFood(param) {
+      const params = {
+        apikey: "seHQMRp1KfTieFzb/6GYbQ==AMJZg9DMN3iiYKZX",
+        targetParam: param,
+      };
+      console.log(
+        "fetchSearchCountryFood()",
+        params.targetParam
+      );
+      const url = `https://api.api-ninjas.com/v1/recipe?X-Api-Key=${params.apikey}&query=${params.targetParam}`;
+      const options = {
+        method: "GET",
+      };
+      return (this.searchedCountryFoodData = await fetch(url, options)
+        .then(function (response) {
+          console.log(response);
+          
           return response.json();
         })
         .catch((error) => {
@@ -281,11 +291,12 @@ export const useFoodDataStore = defineStore("FoodDataStore", {
                         emoji
                         emojiU
                         name
+                        code
                       }
                   }`,
         }),
       };
-      return (this.reactiveCountries = await fetch(url, options)
+      return (this.reactiveCountrieData = await fetch(url, options)
         .then(function (response) {
           console.log(response);
           if (response.status === 200) {

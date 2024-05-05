@@ -23,7 +23,7 @@ const props = defineProps({
   },
   countryPosDataProp: {
     type: Object,
-    required: true
+    required: false
   },
   initCoordsProp: {
     type: Object,
@@ -96,45 +96,38 @@ function initMap() {
 function buildMap() {
   console.log('buildMapcomputeInitCoords.value', computeInitCoords.value)
   //option zoomAnimation:false is manditory setting because of bug. needs fix to set to : true
-  map.value = L.map('map', { zoomAnimation: false, zoom: 6, center: computeInitCoords.value }).setView(computeInitCoords.value, 4);
-  // map.value   = L.map('map', {
-  // center: [computeInitCoords.value],
-  // zoom: 10
-  // });
+  map.value = L.map('map', { 
+    zoomAnimation: false,
+    center: computeInitCoords.value 
+  }).setView(computeInitCoords.value, 6);
 
 const tiles = L.tileLayer(computeMapStyle.value, {
-    minZoom:2,
-    maxZoom: 19,
-    attribution: 'Tiles &copy; Esri &mdash; Source: Esri, DeLorme, NAVTEQ, USGS, Intermap, iPC, NRCAN, Esri Japan, METI, Esri China (Hong Kong), Esri (Thailand), TomTom, 2012'
+    attribution: 'some attributions'
   }).addTo(map.value);
   buildmapStat.value = true;
   createMarker()
 }
 
-//   const tiles = L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
-//     minZoom:2,
-//     maxZoom: 19,
-//     attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>'
-//   }).addTo(map.value);
-//   buildmapStat.value = true;
-//   createMarker()
-// }
 
 
 ////////////////////////////
 //markers for cluster groups
 function addNewMarker() {
-  let layergroup = L.layerGroup()
+  console.log("addMarker")
+  //let layergroup = L.layerGroup()
   const markersClusterGroup = L.markerClusterGroup();
   for (var i = 0; i < clusterPositions.value.length; i++) {
+    console.log("for loop")
     var a = clusterPositions.value[i];
     var title = a[2];
-    console.log(title)
+    // console.log(title)
     //layer
-    const custmarker = L.marker([a[0], a[1]], { title: title }).addTo(markersClusterGroup);
-    custmarker.bindPopup(title)
+    const clustmarker = L.marker([a[0], a[1]], { title: title }).addTo(markersClusterGroup);
+    clustmarker.bindPopup(title)
   }
+
   arrayRefIds.value.push(markersClusterGroup)
+  console.log("add cluster too map")
   markersClusterGroup.addTo(map.value)
   console.log("addMarker", arrayRefIds.value)
 }
@@ -156,15 +149,16 @@ function setMapStyle(arg){
 }
 
 function setClusters() {
+  console.log('setClusters')
   
   //toggle mapstyle
-    //condition ? exprIfTrue : exprIfFalse
-    isDefaultMapStyle.value ? initMap() : setMapStyle(true)
+  //condition ? exprIfTrue : exprIfFalse
+   isDefaultMapStyle.value ? initMap() : setMapStyle(true)
+  
   //toggle clusters on map
   isClusterActive.value = !isClusterActive.value;
   if (isClusterActive.value) {
-    map.value.remove();
-    
+    //map.value.remove();
     addNewMarker()
     return isClusterActive.value
   } else {
@@ -175,7 +169,6 @@ function setClusters() {
 }
 
 function onMapClick(e) {
-  
   let Clickedcoords = e.latlng;
   reactiveCords = {
     lat: Clickedcoords.lat,
@@ -184,7 +177,7 @@ function onMapClick(e) {
   emitClickedPos('emit-clicked-position-value', reactiveCords)
   
  //condition ? exprIfTrue : exprIfFalse
- isDefaultMapStyle.value ? '' : setMapStyle(true)
+// isDefaultMapStyle.value ? '' : setMapStyle(true)
 }
 
 function createMarker(arg) {
@@ -213,8 +206,7 @@ function setContentPopup(reactiveCords) {
     liEl.append(textnode)
     listUl.append(liEl)
   }
-  clickedPopup.setLatLng(reactiveCords)
-    .setContent(contentContainer).openOn(map.value);
+  clickedPopup.setLatLng(reactiveCords).setContent(contentContainer).openOn(map.value);
 }
 
 async function addMarker(cuisine) {
@@ -245,7 +237,7 @@ async function addMarker(cuisine) {
 
 //COMPUTED
 const computeinitPostData = computed(function () {
-  console.log(props.initPosDataProp)
+  //console.log(props.initPosDataProp)
   if (props.initPosDataProp) {
     for (var key in props.initPosDataProp[0]) {
       //returning city name
@@ -259,9 +251,9 @@ const computeinitPostData = computed(function () {
 const computeInitCoords = computed(function () {
   //computed when change in value prop.initmapvalue
   if (props.initmapvalue && (props.initCoordsProp === undefined)) {
-    console.log("props.initmapvalue?:",
-      props.initmapvalue.coords.latitude,
-      props.initmapvalue.coords.longitude)
+      // console.log("props.initmapvalue?:",
+      // props.initmapvalue.coords.latitude,
+      // props.initmapvalue.coords.longitude)
       reactiveCords = reactive({
         coords: {
           latitude: props.initmapvalue.coords.latitude,
@@ -271,7 +263,7 @@ const computeInitCoords = computed(function () {
     return [props.initmapvalue.coords.latitude, props.initmapvalue.coords.longitude]
   }
   else if (props.initmapvalue && props.initCoordsProp && (props.countryPosDataProp === undefined)) {
-    console.log("props.initCoordsProp", props.initCoordsProp.coords.latitude, props.initCoordsProp.coords.longitude)
+   // console.log("props.initCoordsProp", props.initCoordsProp.coords.latitude, props.initCoordsProp.coords.longitude)
     reactiveCords = reactive({
         coords: {
           latitude: props.initCoordsProp.coords.latitude,
@@ -309,13 +301,13 @@ const computeMapStyle = computed(function () {
 })
 
 const computeRestaurants = computed(function () {
-  console.log("props.currentFoodRestaurants", props.currentFoodRestaurantsProp)
+  //console.log("props.currentFoodRestaurants", props.currentFoodRestaurantsProp)
   return props.currentFoodRestaurantsProp
 })
 
 //WATCH
 watch(computeinitPostData, async () => {
-  console.log("watch computeinitPostData", props.initPosDataProp[0].name)
+  //console.log("watch computeinitPostData", props.initPosDataProp[0].name)
   // positionName.value = true
   const cuisine = {
     currentLandOrigin: "thai"
@@ -324,12 +316,12 @@ watch(computeinitPostData, async () => {
 })
 
 watch(computeInitCoords, () => {
-  console.log("watch confirm computeInitCoords", reactiveOrigonPosData, computeInitCoords.value)
+  //console.log("watch confirm computeInitCoords", reactiveOrigonPosData, computeInitCoords.value)
   initMap()
 })
 
 watch(computeClickedPosition, () => {
-  console.log("watch computeClickedPosition", reactiveCords)
+  //console.log("watch computeClickedPosition", reactiveCords)
   setContentPopup(reactiveCords)
 })
 

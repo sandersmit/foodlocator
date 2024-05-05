@@ -18,12 +18,12 @@ const props = defineProps({
 });
 
 //destructure parts of the store
-const { reactiveCountries } = storeToRefs(useFoodDataStore());
+const { reactiveCountries , allCountryNames} = storeToRefs(useFoodDataStore());
 const foodDataStore = useFoodDataStore();
 
 const dataFindSelected = reactive({
   currentIngredientName: "",
-  currentLandOrigin: null,
+  currentLandOrigin: 'thai',
   targetCountry: null,
   currentLandLocation: null
 })
@@ -35,12 +35,6 @@ const initPosData = reactive({
   }
 })
 
-//One-Way Data Flow - converted the prop to ref for reactive value 
-//from other child comp to the prop app.vue 
-const emitedValuePropRef = ref()
-const mapCompRef = ref()
-const locationUser = ref(false)
-const pages = ref(1)
 const emitedClickedValueReacive = reactive({
   coords: {
     latitude: initPosData.coords.latitude,
@@ -48,6 +42,15 @@ const emitedClickedValueReacive = reactive({
   }
 })
 
+//One-Way Data Flow - converted the prop to ref for reactive value 
+//from other child comp to the prop app.vue 
+const emitedValuePropRef = ref()
+const mapCompRef = ref()
+const locationUser = ref(false)
+const showAllCountries = ref(false)
+const pages = ref(1)
+const searchedCountry = ref()
+const showloader = ref(false)
 
 
 //METHODS
@@ -60,13 +63,12 @@ function emitPositionValue(argument) {
 
 //One-Way Data Flow - emited to prop
 function emitClickedPositionValue(argument) {
-  console.log("clicked emit LatLong: ", argument.lat, argument.lng)
+  //console.log("clicked emit LatLong: ", argument.lat, argument.lng)
   emitedClickedValueReacive.coords.latitude = argument.lat;
   emitedClickedValueReacive.coords.longitude = argument.lng;
   foodDataStore.fetchFoodOriginClickPos(emitedClickedValueReacive)
   foodDataStore.fetchDataClickPos(emitedClickedValueReacive)
 }
-
 
 function fetchFoodData(arg) {
   foodDataStore.fetchcuisine(arg)
@@ -74,11 +76,10 @@ function fetchFoodData(arg) {
 
 function fetchCountries() {
   console.log("fetchCountries")
-  for (var key in mapCompRef.value) {
-    console.log(mapCompRef.value.isDefaultMapStyle)
-     mapCompRef.value.isDefaultMapStyle = false;
-     console.log(mapCompRef.value.isDefaultMapStyle)
-  }
+  // for (var key in mapCompRef.value) {
+  //    mapCompRef.value.isDefaultMapStyle = false;
+  //   //console.log(mapCompRef.value.isDefaultMapStyle)
+  // }
   foodDataStore.fetchDataCountries();
 }
 
@@ -90,6 +91,25 @@ function fetchCountriePosition(arg) {
 function fetchPostionGeoData(arg) {
   foodDataStore.fetchFoodOriginPosition(arg)
 }
+function searchCountryFood(arg){
+  console.log("fetch, show loader true", arg)
+  showloader.value = true;
+  const searchedLandCode = foodDataStore.getAllCoutriesApi.filter((item, index) => {
+  if(item.name === arg){
+    //not needed in api 
+    //some others do need it
+    console.log(item.code)
+    foodDataStore.fetchSearchCountryFood(item.name);
+  };
+}); 
+// for (let key in searchedLandCode) {
+//         if (searchedLandCode.hasOwnProperty(key)) {
+//             const value = searchedLandCode[key];
+//             console.log(value.code);
+//         }
+//     }
+}
+
 function scrollPageTo(arg)
 {
     window.scrollTo({
@@ -98,33 +118,20 @@ function scrollPageTo(arg)
   });
 }
 
-//COMPUTED
-// const computeTargetPosition = computed(function () {
-//   //cuisine is selected by user
-//   if (dataFindSelected.currentLandOrigin) {
-//     console.log("dataFindSelected.currentLandOrigin", dataFindSelected.currentLandOrigin)
-//     fetchFoodData(dataFindSelected)
-//     return 'currentLandLocation'
-//   }
-//   //location is accepted by user
-//   if (emitedValuePropRef.value) {
-//     console.log("computeTargetPosition", emitedValuePropRef.value)
-//     return [emitedValuePropRef.value]
-//     //location is clicked by user
-//   } else if (emitedValuePropRef.value && emitedClickedValueReacive.coords) {
-//     console.log("computeTargetPosition", emitedClickedValueReacive.coords)
-//     return [emitedClickedValueReacive.coords]
-//   }
-// })
+function toggleCountries(){
+  showAllCountries.value = !showAllCountries.value
+}
 
+
+//COMPUTED
 const computeClickedTargetPosition = computed(function () {
   if (emitedClickedValueReacive) {
-    console.log("computeClickedTargetPosition", foodDataStore.getFoodPositionDataByClick)
     return foodDataStore.getFoodPositionDataByClick;
   } else {
     return foodDataStore.getFoodPositionDataByClick;
   }
 })
+
 
 const computeClickedTargetCatPosition = computed(function () {
   //get cathegorie specific position data
@@ -135,25 +142,37 @@ const computeClickedTargetCatPosition = computed(function () {
   }
 })
 
+
 const computeIsCluster = computed(function () {
   //get cathegorie specific position data
-  for (var key in mapCompRef.value) {
+  for (let key in mapCompRef.value) {
     return mapCompRef.value.isClusterActive
   }
 })
 
 const computeGetCountries = computed(function () {
   //get cathegorie specific position data
-  //if (reactiveCountries.length) {
+ // if (reactiveCountries.length) {
   //array
   return foodDataStore.getAllCoutriesApi;
-  //} else {
-  //}
+ // }
 })
 
+const computeCountryFood = computed(function () {
+  showloader.value = false;
+  return foodDataStore.getSearchedCountryFood;
+})
+
+const computeCountryNames = computed(function () {
+  return allCountryNames.value.flat()
+})
+
+
+
 onMounted(() => {
-  console.log("onMounted", initPosData.coords, computeIsCluster.value)
+ // console.log("onMounted", initPosData.coords, computeIsCluster.value)
   fetchPostionGeoData(initPosData)
+  fetchCountries()
 })
 </script>
 
@@ -180,21 +199,19 @@ onMounted(() => {
         </v-app-bar-title>
       </v-container>
     </v-app-bar>
-    
     <section id="grid" class="py-8">
       <v-container>
         <v-row justify="space-around">
           <v-col cols="auto">
-            <v-responsive class="overflow-visible" width="350">
+            <v-responsive class="overflow-visible" width="450">
               <h2 class="text-h4">
-                All the farmers in the netherlands
+                All agriculture in the netherlands
               </h2>
-              <p class="mt-8">
-                <span class="text-blue">{{ computeIsCluster ? "Show all farmers" : "Don't show all farmers" }}</span>
+              <p class="mt-5">
+                <span class="text-blue-darken-1">{{ computeIsCluster ? "Show all farmers" : "Don't show all farmers" }}</span>
               </p>
               <p>
-                License and requires an extensive amount of time
-                to maintain. Supporting development ensures Vuetify will be actively maintained.
+               All agriculture comppanies in the netherlands that are producing. Agriculture is economy of the country. The country's economy depends on agriculture. 
               </p>
               <v-switch @click="mapCompRef.setClusters()" color="info" inset
                 :label="`Toggle all farmers on the map ${computeIsCluster}`" false-value="no"
@@ -202,24 +219,24 @@ onMounted(() => {
             </v-responsive>
           </v-col>
           <v-col cols="auto">
-            <v-responsive class="overflow-visible" width="350">
+            <v-responsive class="overflow-visible" width="450">
               <h2 class="text-h4">
                 Pointed geo data
               </h2>
-
-              <v-chip class="my-1" append-icon="$vuetify">
-                {{ emitedClickedValueReacive.coords.latitude }}
-              </v-chip>
-              <v-chip append-icon="$vuetify">
-                {{ emitedClickedValueReacive.coords.longitude }}
-              </v-chip>
-
-              <strong>Become a sponsor</strong>
-              <p class="mt-8">
-                Vuetify is free to use software under the <a href="https://opensource.org/licenses/MIT" target="_blank"
-                  rel="noopener noreferrer">MIT</a> License and requires an extensive amount of time
-                to maintain. Supporting development ensures Vuetify will be actively maintained.
+              <p class="mt-5">
+                Click on the map to discover where the nearest agriculture food farms are located. 
               </p>
+              <p class="mt-5 text-blue-darken-1">
+                Current position
+              </p>
+              <v-chip class="mt-2 mr-2" append-icon="$vuetify">
+               Lat: {{ emitedClickedValueReacive.coords.latitude }}
+              </v-chip>
+              <v-chip class="mt-2 mr-2" append-icon="$vuetify">
+               Lon: {{ emitedClickedValueReacive.coords.longitude }}
+              </v-chip>
+
+              
               <ul class="mt-5">
                 <li v-for="(value, key, index) in computeClickedTargetPosition[0]">
                   <span v-if="index == 0">
@@ -242,19 +259,26 @@ onMounted(() => {
         <v-container>
           <v-row justify="space-around">
             <v-col cols="auto">
-              <v-responsive width="350">
+              <v-responsive width="450">
                 <v-form @submit.prevent>
                   <v-container>
                     <h4 class="text-h5 pb-5">
-                      Show food from specific country
+                    Search food from specific country 
                     </h4>
+                    <p class="my-3 text-blue-darken-1">
+                      Foods from {{ computeGetCountries ? computeGetCountries.length : 0 }} different countries
+                    </p>
                     <v-row>
                       <v-col cols="12" md="12">
-                        <v-combobox label="Select country" :items="foodDataStore.reactiveCountryOrgins">
-                        </v-combobox>
+                        <v-autocomplete
+                          clearable
+                          label="Search country"
+                          :items="computeCountryNames"
+                          v-model="searchedCountry"
+                        ></v-autocomplete>
                       </v-col>
                       <v-col cols="12" md="12">
-                        <v-btn type="submit" @click="fetchFoodData(dataFindSelected)" block>Search</v-btn>
+                        <v-btn type="submit" @click="searchCountryFood(searchedCountry)" block>Search</v-btn>
                       </v-col>
                     </v-row>
                   </v-container>
@@ -262,25 +286,25 @@ onMounted(() => {
               </v-responsive>
             </v-col>
             <v-col cols="auto">
-              <v-responsive width="350">
+              <v-responsive width="450">
                 <h2 class="text-h4">
-                  Total selected foods: {{ foodDataStore.getFoodDataByCuisine.length }}
+                Total found foods:  <span class="my-3 text-blue-darken-1">{{ computeCountryFood.length }}</span> 
                 </h2>
-                <p class="text-success my-3">
-                  Foods from : country name
+                <ul>
+                  <li class="mt-3"  v-if="!computeCountryFood.length == 0" v-for="(item, index) in foodDataStore.getSearchedCountryFood ">
+                  {{ item.title }}
+                  </li>
+                  <li class="my-3 text-blue-darken-1" v-else>
+                    <span v-if="showloader">Loading..</span>
+                    <span v-else-if="!showloader">{{ searchedCountry ? `no food found in ${searchedCountry}` : "no selection" }}</span>
+                  </li>
+                </ul>
+                <p class="mt-5">
+                Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nu
                 </p>
-
-                <li v-for="(item, index) in foodDataStore.getFoodDataByCuisine ">
-                  {{ index }}{{ item }}
-                </li>
-
-                <p class="mt-8">
-                  Assign default values for all components in the library, including nested support.
-                </p>
-
-                <v-btn class="mt-6" href="https://next.vuetifyjs.com/features/global-configuration/" target="_blank"
-                  rel="noopener noreferrer">
-                  More Information
+                <v-btn class="mt-6"
+                  href="#html" :disabled="locationUser ? false : true" @click="fetchCountriePosition(searchedCountry)">
+                  {{locationUser ? "Show on map" : "confirm location to show on map"}}
                 </v-btn>
               </v-responsive>
             </v-col>
@@ -296,17 +320,15 @@ onMounted(() => {
             <v-responsive>
               <!-- {{locationUser.value ? disabled : '' }} -->
               <div class="countriesTop">
-                <v-btn-alt class="my-6" :disabled="locationUser ? false : true"  @click="fetchCountries()" rel="">
-                  Show all countries 
+                <v-btn-alt class="my-6" :disabled="locationUser ? false : true"  @click="toggleCountries()" rel="">
+                  {{ !showAllCountries ? 'Show all countries' : 'Hide countries'  }}
                 </v-btn-alt>
                 <a href=""  @click.prevent="scrollPageTo(400)" v-if="!locationUser" class="text-warning my-3 ">Confirm user location</a>
                 <p v-else class="text-success my-3">
                   Total countries: <strong>{{ computeGetCountries ? computeGetCountries.length : 0 }} </strong>
                 </p>
               </div>
-              <!-- <div>{{ computeGetCountries.data.countries }}</div> -->
-              <ul class="countries">
-
+              <ul class="countries" v-show="showAllCountries">
                 <li v-for="(item, index) in computeGetCountries">
                   <a href="#html" @click="fetchCountriePosition(item.name)">
                     {{ item.name }}
@@ -322,9 +344,9 @@ onMounted(() => {
     <v-sheet class="py-16">
       <section>
         <v-container>
-          <v-row justify="space-between">
-            <v-col cols="auto">
-              <v-responsive width="350">
+          <v-row justify="space-around">
+            <v-col cols="auto"> 
+              <v-responsive width="450">
                 <v-form @submit.prevent>
                   <v-container>
                     <h4 class="text-h5 pb-5">
@@ -332,35 +354,28 @@ onMounted(() => {
                     </h4>
                     <v-row>
                       <v-col cols="12" md="12">
-                        <v-autocomplete clearable label="Land of origin" :items="foodDataStore.reactiveCurrentCuisines"
+                        <v-autocomplete @blur="fetchFoodData(dataFindSelected)" clearable label="Land of origin" :items="foodDataStore.reactiveCurrentCuisines"
                           v-model="dataFindSelected.currentLandOrigin"></v-autocomplete>
                       </v-col>
-                      <v-col cols="12" md="12">
+                      <!-- <v-col cols="12" md="12">
                         <v-btn type="submit" @click="fetchFoodData(dataFindSelected)" block>Search</v-btn>
-                      </v-col>
+                      </v-col> -->
                     </v-row>
                   </v-container>
                 </v-form>
               </v-responsive>
             </v-col>
             <v-col cols="auto">
-              <v-responsive width="350">
+              <v-responsive width="450">
                 <h2 class="text-h4">
-                  Total selected cuisines: {{ foodDataStore.getFoodDataByCuisine.length }}
+                  Total selected {{dataFindSelected.currentLandOrigin}} cuisines: <span class="text-blue-darken-1">{{ foodDataStore.getFoodDataByCuisine.length }}</span>
                 </h2>
-                <p class="text-success mt-3">
-                  Global Defaults
-                </p>
-
-                <strong class="mt-3">
-                  Version 3 Only
-                </strong>
-
-                <li v-for="(item, index) in foodDataStore.getFoodDataByCuisine ">
-                  {{ index }}{{ item }}
-                </li>
-
-                <p class="mt-8">
+                <ul class="my-6">
+                  <li v-for="(item, index) in foodDataStore.getFoodDataByCuisine ">
+                    {{ item }}
+                  </li>
+                </ul>
+                <p class="mt-5">
                   Assign default values for all components in the library, including nested support.
                 </p>
 
@@ -469,12 +484,12 @@ onMounted(() => {
                     Version 3 Only
                   </strong>
 
-                  <p class="mt-8">
+                  <p class="mt-5">
                     Vuetify 3 has an unprecedented level of customization options that make implementing any design
                     system easy.
                   </p>
 
-                  <p class="mt-8">
+                  <p class="mt-5">
                     Assign default values for all components in the library, including nested support.
                   </p>
                   <v-btn class="mt-6" href="https://next.vuetifyjs.com/features/global-configuration/" target="_blank"
@@ -514,7 +529,7 @@ onMounted(() => {
                     out of the box.
                   </p>
 
-                  <p class="mt-8">
+                  <p class="mt-5">
                     <strong>How to use:</strong>
 
                     Services are now accessed through <strong>use functions</strong> that follow the Vue 3 nomenclature
@@ -605,5 +620,10 @@ html {
 .flag {
   font-size: 2rem;
   padding: 0.5rem;
+}
+ul{
+  li{
+    list-style-type: none;
+  }
 }
 </style>
