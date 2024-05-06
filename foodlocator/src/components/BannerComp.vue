@@ -25,9 +25,8 @@ function positionValueEmit() {
     console.log("Geolocation is not supported by this browser.")
   }
   function showPosition(position) {
-    console.log("Latitude: " + position.coords.latitude +
-      "Longitude:" + position.coords.longitude)
-
+    // console.log("Latitude: " + position.coords.latitude +
+    //   "Longitude:" + position.coords.longitude)
     emit('emit-position-value', position)
     activeBannerRef.value = false;
     data.currentposition = position
@@ -49,7 +48,6 @@ const computeinitPosData = computed(function(){
 onMounted(() => {
   //initLocation()
 })
-
 </script>
 
 <template>

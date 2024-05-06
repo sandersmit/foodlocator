@@ -85,7 +85,7 @@ export const useFoodDataStore = defineStore("FoodDataStore", {
     getFoodDataByCuisine: function (state) {
       //return this.reactiveFoodCuising.results
       for (var key in this.reactiveFoodCuising.results) {
-        // console.log(this.reactiveFoodCuising.results[key].title);
+       
         state.reactviefoodTitles.push(
           this.reactiveFoodCuising.results[key].title
         );
@@ -96,7 +96,6 @@ export const useFoodDataStore = defineStore("FoodDataStore", {
       return this.reactiveClickedPosData;
     },
     getSearchedCountryFood: function (state) {
-      console.log(this.searchedCountryFoodData.ok, this.searchedCountryFoodData )
       return this.searchedCountryFoodData
     },
     getFoodPositionCatDataByClick: function (state) {
@@ -106,7 +105,6 @@ export const useFoodDataStore = defineStore("FoodDataStore", {
         Object.entries(this.reactiveClickedPosCatData.results[key]).forEach(
           ([key1, value]) => {
             if (key1 == "poi") {
-              // console.log(value.name);
               //push into new state array
               state.reactiveClickedCatTitles.push(value.name);
             }
@@ -121,18 +119,14 @@ export const useFoodDataStore = defineStore("FoodDataStore", {
     getCountryPositionData: function (state) {
       for (var key in this.reactiveCountryPosData.results) {
         //result
-        console.log( "getCountryPositionData:", this.reactiveCountryPosData.results[key].position);
-       // this.reactiveFoodCuising.results[key]
-       if (this.reactiveCountryPosData.results[key].position) {
-        return this.reactiveCountryPosData.results[key].position
-       } else {
-        return {lat:"100",lon:"40"}
-       }
-       
+        if (this.reactiveCountryPosData.results[key].position) {
+          return this.reactiveCountryPosData.results[key].position
+        } else {
+          return {lat:"100",lon:"40"}
+        }
       }
     },
     getAllApiFoodOrigins: function (state) {
-      //console.log("getAllApiFoodMenuTitles")
       for (var key in this.reactiveAllApiMenuDetails.meals) {
         state.reactviefoodOrigin.push(
           this.reactiveAllApiMenuDetails.meals[key].strArea
@@ -141,14 +135,11 @@ export const useFoodDataStore = defineStore("FoodDataStore", {
       return state.reactviefoodOrigin;
     },
     getAllCoutriesApi: function (state) {
-      console.log("getAllCoutriesApi");
       for (var key in this.reactiveCountrieData.data) {
         this.reactiveCountrieData.data.countries.forEach(
              element => {
-              //console.log(element.name)
               state.allCountryNames.push(element.name)
           });
-        console.log(this.reactiveCountrieData.data.countries)
         return this.reactiveCountrieData.data.countries;
       }
     },
@@ -157,7 +148,6 @@ export const useFoodDataStore = defineStore("FoodDataStore", {
   //For Mutating items within the store state, use actions
   actions: {
     async fetchcuisine(param) {
-      console.log("fetchcuisine?")
       const params = {
         apikey: "8c12d249836f4974861f860603695b21",
         cuisine: param.currentLandOrigin,
@@ -170,7 +160,6 @@ export const useFoodDataStore = defineStore("FoodDataStore", {
       //fetching fetchFoodCategorie
       return (this.reactiveFoodCuising = await fetch(url, options)
         .then(function (response) {
-          // console.log(response);
           return response.json();
         })
         .catch((error) => {
@@ -183,11 +172,6 @@ export const useFoodDataStore = defineStore("FoodDataStore", {
         apikey: "seHQMRp1KfTieFzb/6GYbQ==AMJZg9DMN3iiYKZX",
         targetClickedPos: param,
       };
-      console.log(
-        "fetchFoodOriginPosition()",
-        params.targetClickedPos.coords.latitude,
-        params.targetClickedPos.coords.longitude
-      );
       const url = `https://api.api-ninjas.com/v1/reversegeocoding?X-Api-Key=${params.apikey}&lat=${params.targetClickedPos.coords.latitude}&lon=${params.targetClickedPos.coords.longitude}`;
       const options = {
         method: "GET",
@@ -195,7 +179,6 @@ export const useFoodDataStore = defineStore("FoodDataStore", {
 
       return (this.reactiveOrigonPosData = await fetch(url, options)
         .then(function (response) {
-          //console.log(response);
           return response.json();
         })
         .catch((error) => {
@@ -208,11 +191,6 @@ export const useFoodDataStore = defineStore("FoodDataStore", {
         apikey: "seHQMRp1KfTieFzb/6GYbQ==AMJZg9DMN3iiYKZX",
         targetClickedPos: param,
       };
-      console.log(
-        "fetchFoodOriginClickedPosition()",
-        params.targetClickedPos.coords.latitude,
-        params.targetClickedPos.coords.longitude
-      );
       const url = `https://api.api-ninjas.com/v1/reversegeocoding?X-Api-Key=${params.apikey}&lat=${params.targetClickedPos.coords.latitude}&lon=${params.targetClickedPos.coords.longitude}`;
       const options = {
         method: "GET",
@@ -220,12 +198,10 @@ export const useFoodDataStore = defineStore("FoodDataStore", {
       this.reactiveClickedCatTitles.length = 0;
       return (this.reactiveClickedPosData = await fetch(url, options)
         .then(function (response) {
-          console.log(response);
           return response.json();
         })
         .catch((error) => {
           //request failed
-          console.log("error", error);
         }));
     },
     async fetchSearchCountryFood(param) {
@@ -233,18 +209,12 @@ export const useFoodDataStore = defineStore("FoodDataStore", {
         apikey: "seHQMRp1KfTieFzb/6GYbQ==AMJZg9DMN3iiYKZX",
         targetParam: param,
       };
-      console.log(
-        "fetchSearchCountryFood()",
-        params.targetParam
-      );
       const url = `https://api.api-ninjas.com/v1/recipe?X-Api-Key=${params.apikey}&query=${params.targetParam}`;
       const options = {
         method: "GET",
       };
       return (this.searchedCountryFoodData = await fetch(url, options)
         .then(function (response) {
-          console.log(response);
-          
           return response.json();
         })
         .catch((error) => {
@@ -257,11 +227,6 @@ export const useFoodDataStore = defineStore("FoodDataStore", {
         apikey: "KjKDh5pZHHuL7YseZFcXsCXQt5PhPgGv",
         targetClickedPos: param,
       };
-      console.log(
-        "fetchFoodOriginPosition()",
-        params.targetClickedPos.coords.latitude,
-        params.targetClickedPos.coords.longitude
-      );
       const url = `https://api.tomtom.com/search/2/categorySearch/snacks.json?key=${params.apikey}&typehead=false&lat=${params.targetClickedPos.coords.latitude}&lon=${params.targetClickedPos.coords.longitude}&radius=10000`;
       const options = {
         method: "GET",
@@ -269,8 +234,6 @@ export const useFoodDataStore = defineStore("FoodDataStore", {
 
       return (this.reactiveClickedPosCatData = await fetch(url, options)
         .then(function (response) {
-          console.log(response);
-
           return response.json();
         })
         .catch((error) => {
@@ -298,10 +261,6 @@ export const useFoodDataStore = defineStore("FoodDataStore", {
       };
       return (this.reactiveCountrieData = await fetch(url, options)
         .then(function (response) {
-          console.log(response);
-          if (response.status === 200) {
-            console.log("response.ok:", response.ok);
-          }
           return response.json();
         })
         .catch((error) => {
@@ -321,7 +280,6 @@ export const useFoodDataStore = defineStore("FoodDataStore", {
 
       return (this.reactiveCountryPosData = await fetch(url, options)
         .then(function (response) {
-          console.log(response);
           if (response.status === 200) {
             console.log("response.ok:", response.ok);
           }

@@ -74,14 +74,11 @@ let reactiveCords = reactive({
 
 function initMap() {
   if (map.value != null) {
-    console.log("remove existing map")
     map.value.remove();
     buildMap()
     //addMarker()
   } else {
-    console.log("add new map", buildmapStat.value)
     buildMap()
-    console.log("add new map", buildmapStat.value)
     //addMarker()
   }
   map.value.on('click', onMapClick);
@@ -94,7 +91,6 @@ function initMap() {
 }
 
 function buildMap() {
-  console.log('buildMapcomputeInitCoords.value', computeInitCoords.value)
   //option zoomAnimation:false is manditory setting because of bug. needs fix to set to : true
   map.value = L.map('map', { 
     zoomAnimation: false,
@@ -113,30 +109,23 @@ const tiles = L.tileLayer(computeMapStyle.value, {
 ////////////////////////////
 //markers for cluster groups
 function addNewMarker() {
-  console.log("addMarker")
   //let layergroup = L.layerGroup()
   const markersClusterGroup = L.markerClusterGroup();
   for (var i = 0; i < clusterPositions.value.length; i++) {
-    console.log("for loop")
     var a = clusterPositions.value[i];
     var title = a[2];
-    // console.log(title)
     //layer
     const clustmarker = L.marker([a[0], a[1]], { title: title }).addTo(markersClusterGroup);
     clustmarker.bindPopup(title)
   }
 
   arrayRefIds.value.push(markersClusterGroup)
-  console.log("add cluster too map")
   markersClusterGroup.addTo(map.value)
-  console.log("addMarker", arrayRefIds.value)
 }
 
 function removeNewMarker() {
-  console.log("removeMarker clustermarkers", arrayRefIds.value)
   // remove all markers
   arrayRefIds.value.forEach(element => {
-    console.log(element)
     // remove all markers
     element.remove();
   });
@@ -144,21 +133,16 @@ function removeNewMarker() {
 
 function setMapStyle(arg){
   isDefaultMapStyle.value = arg;
-  console.log("setMapStyle", isDefaultMapStyle.value)
   initMap()
 }
 
 function setClusters() {
-  console.log('setClusters')
-  
   //toggle mapstyle
-  //condition ? exprIfTrue : exprIfFalse
    isDefaultMapStyle.value ? initMap() : setMapStyle(true)
   
   //toggle clusters on map
   isClusterActive.value = !isClusterActive.value;
   if (isClusterActive.value) {
-    //map.value.remove();
     addNewMarker()
     return isClusterActive.value
   } else {
@@ -176,7 +160,6 @@ function onMapClick(e) {
   }
   emitClickedPos('emit-clicked-position-value', reactiveCords)
   
- //condition ? exprIfTrue : exprIfFalse
 // isDefaultMapStyle.value ? '' : setMapStyle(true)
 }
 
@@ -237,7 +220,6 @@ async function addMarker(cuisine) {
 
 //COMPUTED
 const computeinitPostData = computed(function () {
-  //console.log(props.initPosDataProp)
   if (props.initPosDataProp) {
     for (var key in props.initPosDataProp[0]) {
       //returning city name
@@ -251,9 +233,6 @@ const computeinitPostData = computed(function () {
 const computeInitCoords = computed(function () {
   //computed when change in value prop.initmapvalue
   if (props.initmapvalue && (props.initCoordsProp === undefined)) {
-      // console.log("props.initmapvalue?:",
-      // props.initmapvalue.coords.latitude,
-      // props.initmapvalue.coords.longitude)
       reactiveCords = reactive({
         coords: {
           latitude: props.initmapvalue.coords.latitude,
@@ -263,7 +242,6 @@ const computeInitCoords = computed(function () {
     return [props.initmapvalue.coords.latitude, props.initmapvalue.coords.longitude]
   }
   else if (props.initmapvalue && props.initCoordsProp && (props.countryPosDataProp === undefined)) {
-   // console.log("props.initCoordsProp", props.initCoordsProp.coords.latitude, props.initCoordsProp.coords.longitude)
     reactiveCords = reactive({
         coords: {
           latitude: props.initCoordsProp.coords.latitude,
@@ -273,7 +251,6 @@ const computeInitCoords = computed(function () {
     return [props.initCoordsProp.coords.latitude, props.initCoordsProp.coords.longitude]
   }
   else if (props.countryPosDataProp && props.initmapvalue && props.initCoordsProp) {
-    console.log("props.countryPosDataProp", props.countryPosDataProp.lat, props.countryPosDataProp.lon)
     reactiveCords = reactive({
         coords: {
           latitude: props.countryPosDataProp.lat,
@@ -286,7 +263,6 @@ const computeInitCoords = computed(function () {
 
 const computeClickedPosition = computed(function () {
   if (props.clickedPositionDataProp) {
-    console.log("computeClickedPosition", props.clickedPositionDataProp.name, "current position:", reactiveOrigonPosData.value[0].name)
     return foodDataStore.getFoodPositionDataByClick[0].name;
   }
 })
@@ -301,13 +277,11 @@ const computeMapStyle = computed(function () {
 })
 
 const computeRestaurants = computed(function () {
-  //console.log("props.currentFoodRestaurants", props.currentFoodRestaurantsProp)
   return props.currentFoodRestaurantsProp
 })
 
 //WATCH
 watch(computeinitPostData, async () => {
-  //console.log("watch computeinitPostData", props.initPosDataProp[0].name)
   // positionName.value = true
   const cuisine = {
     currentLandOrigin: "thai"
@@ -316,12 +290,10 @@ watch(computeinitPostData, async () => {
 })
 
 watch(computeInitCoords, () => {
-  //console.log("watch confirm computeInitCoords", reactiveOrigonPosData, computeInitCoords.value)
   initMap()
 })
 
 watch(computeClickedPosition, () => {
-  //console.log("watch computeClickedPosition", reactiveCords)
   setContentPopup(reactiveCords)
 })
 
@@ -333,7 +305,6 @@ defineExpose({
 });
 
 onMounted(() => {
-  console.log("onMounted")
   initMap()
 })
 </script>

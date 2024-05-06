@@ -63,7 +63,6 @@ function emitPositionValue(argument) {
 
 //One-Way Data Flow - emited to prop
 function emitClickedPositionValue(argument) {
-  //console.log("clicked emit LatLong: ", argument.lat, argument.lng)
   emitedClickedValueReacive.coords.latitude = argument.lat;
   emitedClickedValueReacive.coords.longitude = argument.lng;
   foodDataStore.fetchFoodOriginClickPos(emitedClickedValueReacive)
@@ -75,16 +74,10 @@ function fetchFoodData(arg) {
 }
 
 function fetchCountries() {
-  console.log("fetchCountries")
-  // for (var key in mapCompRef.value) {
-  //    mapCompRef.value.isDefaultMapStyle = false;
-  //   //console.log(mapCompRef.value.isDefaultMapStyle)
-  // }
   foodDataStore.fetchDataCountries();
 }
 
 function fetchCountriePosition(arg) {
-  console.log("fetchCountriePosition", arg)
   foodDataStore.fetchPositionCountries(arg);
 }
 
@@ -92,13 +85,11 @@ function fetchPostionGeoData(arg) {
   foodDataStore.fetchFoodOriginPosition(arg)
 }
 function searchCountryFood(arg){
-  console.log("fetch, show loader true", arg)
   showloader.value = true;
   const searchedLandCode = foodDataStore.getAllCoutriesApi.filter((item, index) => {
   if(item.name === arg){
     //not needed in api 
     //some others do need it
-    console.log(item.code)
     foodDataStore.fetchSearchCountryFood(item.name);
   };
 }); 
@@ -121,7 +112,6 @@ function scrollPageTo(arg)
 function toggleCountries(){
   showAllCountries.value = !showAllCountries.value
 }
-
 
 //COMPUTED
 const computeClickedTargetPosition = computed(function () {
@@ -170,7 +160,6 @@ const computeCountryNames = computed(function () {
 
 
 onMounted(() => {
- // console.log("onMounted", initPosData.coords, computeIsCluster.value)
   fetchPostionGeoData(initPosData)
   fetchCountries()
 })
