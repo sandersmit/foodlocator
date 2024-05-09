@@ -149,10 +149,10 @@ export const useFoodDataStore = defineStore("FoodDataStore", {
   actions: {
     async fetchcuisine(param) {
       const params = {
-        apikey: "8c12d249836f4974861f860603695b21",
+        apikey: import.meta.env.VITE_endpoint1apikey,
         cuisine: param.currentLandOrigin,
       };
-      const url = `https://api.spoonacular.com/recipes/complexSearch?apiKey=8c12d249836f4974861f860603695b21&cuisine=${params.cuisine}`;
+      const url = import.meta.env.VITE_endpoint1+params.apikey+'&cuisine='+params.cuisine;
       const options = {
         method: "GET",
       };
@@ -160,6 +160,7 @@ export const useFoodDataStore = defineStore("FoodDataStore", {
       //fetching fetchFoodCategorie
       return (this.reactiveFoodCuising = await fetch(url, options)
         .then(function (response) {
+         // console.log('api response: ',response.ok)
           return response.json();
         })
         .catch((error) => {
@@ -169,13 +170,13 @@ export const useFoodDataStore = defineStore("FoodDataStore", {
     },
     async fetchFoodOriginPosition(param) {
       const params = {
-        apikey: "seHQMRp1KfTieFzb/6GYbQ==AMJZg9DMN3iiYKZX",
-        targetClickedPos: param,
+        apikey: import.meta.env.VITE_endpoint2apikey,
+        targetPos: param,
       };
-      const url = `https://api.api-ninjas.com/v1/reversegeocoding?X-Api-Key=${params.apikey}&lat=${params.targetClickedPos.coords.latitude}&lon=${params.targetClickedPos.coords.longitude}`;
-      const options = {
-        method: "GET",
-      };
+      const url = `${import.meta.env.VITE_endpoint2}${params.apikey}&lat=${params.targetPos.coords.latitude}&lon=${params.targetPos.coords.longitude}`;
+        const options = {
+          method: "GET",
+        };
 
       return (this.reactiveOrigonPosData = await fetch(url, options)
         .then(function (response) {
@@ -188,13 +189,13 @@ export const useFoodDataStore = defineStore("FoodDataStore", {
     },
     async fetchFoodOriginClickPos(param) {
       const params = {
-        apikey: "seHQMRp1KfTieFzb/6GYbQ==AMJZg9DMN3iiYKZX",
-        targetClickedPos: param,
+        apikey: import.meta.env.VITE_endpoint2apikey,
+        targetPos: param,
       };
-      const url = `https://api.api-ninjas.com/v1/reversegeocoding?X-Api-Key=${params.apikey}&lat=${params.targetClickedPos.coords.latitude}&lon=${params.targetClickedPos.coords.longitude}`;
-      const options = {
-        method: "GET",
-      };
+      const url =`${import.meta.env.VITE_endpoint2}${params.apikey}&lat=${params.targetPos.coords.latitude}&lon=${params.targetPos.coords.longitude}`;
+        const options = {
+          method: "GET",
+        };
       this.reactiveClickedCatTitles.length = 0;
       return (this.reactiveClickedPosData = await fetch(url, options)
         .then(function (response) {
@@ -206,10 +207,10 @@ export const useFoodDataStore = defineStore("FoodDataStore", {
     },
     async fetchSearchCountryFood(param) {
       const params = {
-        apikey: "seHQMRp1KfTieFzb/6GYbQ==AMJZg9DMN3iiYKZX",
+        apikey: import.meta.env.VITE_endpoint3apikey,
         targetParam: param,
       };
-      const url = `https://api.api-ninjas.com/v1/recipe?X-Api-Key=${params.apikey}&query=${params.targetParam}`;
+     const url = `${import.meta.env.VITE_endpoint3}${params.apikey}&query=${params.targetParam}`;
       const options = {
         method: "GET",
       };
@@ -224,10 +225,11 @@ export const useFoodDataStore = defineStore("FoodDataStore", {
     },
     async fetchDataClickPos(param) {
       const params = {
-        apikey: "KjKDh5pZHHuL7YseZFcXsCXQt5PhPgGv",
+        apikey: import.meta.env.VITE_endpoint4apikey,
         targetClickedPos: param,
       };
-      const url = `https://api.tomtom.com/search/2/categorySearch/snacks.json?key=${params.apikey}&typehead=false&lat=${params.targetClickedPos.coords.latitude}&lon=${params.targetClickedPos.coords.longitude}&radius=10000`;
+      //const url = `https://api.tomtom.com/search/2/categorySearch/farms.json?key=${params.apikey}&typehead=false&lat=${params.targetClickedPos.coords.latitude}&lon=${params.targetClickedPos.coords.longitude}&radius=10000`;
+      const url = `${import.meta.env.VITE_endpoint4}${params.apikey}&typehead=false&lat=${params.targetClickedPos.coords.latitude}&lon=${params.targetClickedPos.coords.longitude}&radius=10000`;
       const options = {
         method: "GET",
       };
@@ -242,7 +244,7 @@ export const useFoodDataStore = defineStore("FoodDataStore", {
         }));
     },
     async fetchDataCountries() {
-      const url = `https://countries.trevorblades.com/graphql`;
+      const url = `${import.meta.env.VITE_endpoint7}`;
       const options = {
         method: "POST",
         headers: {
@@ -270,10 +272,11 @@ export const useFoodDataStore = defineStore("FoodDataStore", {
     },
     async fetchPositionCountries(param) {
       const params = {
-        apikey: "KjKDh5pZHHuL7YseZFcXsCXQt5PhPgGv",
+        apikey: import.meta.env.VITE_endpoint6apikey,
         targetClickedPos: param,
       };
-      const url = `https://api.tomtom.com/search/2/geocode/${params.targetClickedPos}.json?limit=1&key=${params.apikey}`;
+      // const url = `https://api.tomtom.com/search/2/geocode/${params.targetClickedPos}.json?limit=1&key=${params.apikey}`;
+      const url = `${import.meta.env.VITE_endpoint6}${params.targetClickedPos}.json?limit=1&${params.apikey}`;
       const options = {
         method: "GET",
       };

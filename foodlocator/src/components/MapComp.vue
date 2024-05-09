@@ -172,15 +172,19 @@ function createMarker(arg) {
     .bindPopup(arg, { className: "customPopup" })
 }
 
-
 function setContentPopup(reactiveCords) {
   const clickedPopup = L.popup()
   const contentContainer = document.createElement("div");
   contentContainer.classList.add('popupContent')
   const listUl = document.createElement("ul");
   const title = document.createElement("h2");
-  let titleText = document.createTextNode('QuickSnacks in ' + computeClickedPosition.value);
-  title.append(titleText)
+  const span = document.createElement("span");
+  let placeholderText = document.createTextNode('Local food farms in ');
+  let titleText = document.createTextNode(computeClickedPosition.value);
+  span.classList.add('text-blue-darken-1');
+  span.append(titleText)
+  title.append(placeholderText)
+  title.append(span)
   contentContainer.append(title)
   contentContainer.append(listUl)
   for (let index = 0; index < computeRestaurants.value.length; index++) {
@@ -330,17 +334,32 @@ onMounted(() => {
 .leaflet-marker-icon{
   margin-top: -40px !important;
 }
+.leaflet-container{
+  a{
+    &.leaflet-popup-close-button{
+      color: #fff;
+    font-size: 1.5rem;
+    right: 0.5rem;
+    top: 0.5rem;
+
+
+  }
+}
+}
 
 .popupContent {
   border-radius: 0;
 
   h2 {
-    padding: 1rem 0rem;
+    padding-bottom: 1rem;
+    display: flex;
+    flex-direction: column;
   }
 
   ul {
     li {
       list-style: none;
+      font-size: 0.9rem;
     }
   }
 }

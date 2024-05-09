@@ -51,6 +51,8 @@ const showAllCountries = ref(false)
 const pages = ref(1)
 const searchedCountry = ref()
 const showloader = ref(false)
+//Vite Env Variables are type:string - convert it to boolean
+const envLocal = ref(import.meta.env.VITE_env_local=="false"?false:true)
 
 
 //METHODS
@@ -162,6 +164,9 @@ const computeCountryNames = computed(function () {
 onMounted(() => {
   fetchPostionGeoData(initPosData)
   fetchCountries()
+  console.log("envLocal: ", envLocal.value)
+  console.log("env message: ", import.meta.env.VITE_env_message)
+  console.log("envProd:", import.meta.env.PROD)
 })
 </script>
 
