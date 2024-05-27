@@ -1,44 +1,34 @@
 <script setup lang="ts">
-import { ref, reactive, computed, onMounted } from 'vue'
+import { ref, reactive, computed, onMounted } from 'vue';
 import { useFoodDataStore } from './stores/DataFoodStore';
 import { storeToRefs } from "pinia";
+
+//import {} from './types'
 
 import MapComp from './components/MapComp.vue'
 import BannerComp from './components/BannerComp.vue'
 
-const props = defineProps({
-  emitedValueProp: {
-    type: Object,
-    required: false
-  },
-  emitedClickedPosValueProp: {
-    type: Object,
-    required: false
-  }
-});
+
+//TS interfaces
+import type { ReactiveCordsIntFace, CountrySearchType, SearchedCountryType } from './types';
+
+const foodDataStore = useFoodDataStore();
 
 //destructure parts of the store
-const { reactiveCountries , allCountryNames} = storeToRefs(useFoodDataStore());
-const foodDataStore = useFoodDataStore();
+const { currentGeoPos, allCountryInfoObj, allCountryNames} = storeToRefs(useFoodDataStore());
+
 
 const dataFindSelected = reactive({
   currentIngredientName: "",
   currentLandOrigin: 'thai',
-  targetCountry: null,
+  targetCountry: null,  
   currentLandLocation: null
-})
-
-const initPosData = reactive({
-  coords: {
-    latitude: 52.37031805385792,
-    longitude: 4.890289306640626
-  }
 })
 
 const emitedClickedValueReacive = reactive({
   coords: {
-    latitude: initPosData.coords.latitude,
-    longitude: initPosData.coords.longitude
+    latitude: currentGeoPos.value.coords.latitude,
+    longitude: currentGeoPos.value.coords.longitude
   }
 })
 
@@ -49,61 +39,61 @@ const mapCompRef = ref()
 const locationUser = ref(false)
 const showAllCountries = ref(false)
 const pages = ref(1)
-const searchedCountry = ref()
+const searchedCountry = ref<SearchedCountryType>("")
 const showloader = ref(false)
 //Vite Env Variables are type:string - convert it to boolean
-const envLocal = ref(import.meta.env.VITE_env_local=="false"?false:true)
+const envLocal = ref(import.meta.env.VITE_env_local)
 
 
 //METHODS
 //One-Way Data Flow - emited to prop
-function emitPositionValue(argument) {
+function emitPositionValue(argument:ReactiveCordsIntFace) {
+  console.log("fetch?",argument)
   locationUser.value = true;
   emitedValuePropRef.value = argument
   fetchPostionGeoData(emitedValuePropRef.value)
 }
 
 //One-Way Data Flow - emited to prop
-function emitClickedPositionValue(argument) {
-  emitedClickedValueReacive.coords.latitude = argument.lat;
-  emitedClickedValueReacive.coords.longitude = argument.lng;
+function emitClickedPositionValue(argument:ReactiveCordsIntFace) {
+  console.log(argument)
+  emitedClickedValueReacive.coords.latitude = argument.coords.latitude;
+  emitedClickedValueReacive.coords.longitude = argument.coords.longitude;
   foodDataStore.fetchFoodOriginClickPos(emitedClickedValueReacive)
   foodDataStore.fetchDataClickPos(emitedClickedValueReacive)
 }
 
-function fetchFoodData(arg) {
+function fetchFoodData(arg:SearchedCountryType) {
+  console.log(arg)
   foodDataStore.fetchcuisine(arg)
 }
 
 function fetchCountries() {
+  console.log("fetchCountries")
   foodDataStore.fetchDataCountries();
 }
 
-function fetchCountriePosition(arg) {
+function fetchCountriePosition(arg:ReactiveCordsIntFace|SearchedCountryType) {
+console.log(arg)
   foodDataStore.fetchPositionCountries(arg);
 }
 
-function fetchPostionGeoData(arg) {
+function fetchPostionGeoData(arg:ReactiveCordsIntFace) {
+  console.log("fetchPostionGeoData")
   foodDataStore.fetchFoodOriginPosition(arg)
 }
-function searchCountryFood(arg){
+function searchCountryFood(arg:SearchedCountryType){
   showloader.value = true;
-  const searchedLandCode = foodDataStore.getAllCoutriesApi.filter((item, index) => {
+  if(foodDataStore.getAllCountriesApi)
+  foodDataStore.getAllCountriesApi.filter((item:CountrySearchType) => {
+    console.log(item)
   if(item.name === arg){
-    //not needed in api 
-    //some others do need it
     foodDataStore.fetchSearchCountryFood(item.name);
   };
 }); 
-// for (let key in searchedLandCode) {
-//         if (searchedLandCode.hasOwnProperty(key)) {
-//             const value = searchedLandCode[key];
-//             console.log(value.code);
-//         }
-//     }
 }
 
-function scrollPageTo(arg)
+function scrollPageTo(arg:number)
 {
     window.scrollTo({
     top: arg,
@@ -116,38 +106,29 @@ function toggleCountries(){
 }
 
 //COMPUTED
-const computeClickedTargetPosition = computed(function () {
-  if (emitedClickedValueReacive) {
-    return foodDataStore.getFoodPositionDataByClick;
-  } else {
-    return foodDataStore.getFoodPositionDataByClick;
-  }
+const computeGeoPosition = computed(function () {
+  console.log('computeGeoPosition', currentGeoPos.value)
+  return currentGeoPos.value
 })
 
+const computeClickedTargetPosition = computed(function () {
+  return emitedClickedValueReacive?foodDataStore.getFoodPositionDataByClick:[]
+})
 
 const computeClickedTargetCatPosition = computed(function () {
   //get cathegorie specific position data
-  if (emitedClickedValueReacive) {
-    return foodDataStore.getFoodPositionCatDataByClick;
-  } else {
-    return foodDataStore.getFoodPositionCatDataByClick;
-  }
+ return emitedClickedValueReacive?foodDataStore.getFoodPositionCatDataByClick:""
 })
 
 
 const computeIsCluster = computed(function () {
-  //get cathegorie specific position data
-  for (let key in mapCompRef.value) {
-    return mapCompRef.value.isClusterActive
-  }
+  //toggle the cluster boolean from defineExpose outside MapComp 
+   return mapCompRef.value ? mapCompRef.value.isClusterActive : "no computeIsCluster"
 })
 
 const computeGetCountries = computed(function () {
   //get cathegorie specific position data
- // if (reactiveCountries.length) {
-  //array
-  return foodDataStore.getAllCoutriesApi;
- // }
+      return foodDataStore.getAllCountriesApi;
 })
 
 const computeCountryFood = computed(function () {
@@ -156,30 +137,37 @@ const computeCountryFood = computed(function () {
 })
 
 const computeCountryNames = computed(function () {
-  return allCountryNames.value.flat()
+  for (let key in allCountryInfoObj.value) {
+          allCountryNames.value.push(
+            allCountryInfoObj.value[key].name
+        );
+      }
+      return allCountryNames.value
 })
 
 
 
 onMounted(() => {
-  fetchPostionGeoData(initPosData)
   fetchCountries()
-  console.log("envLocal: ", envLocal.value)
-  console.log("env message: ", import.meta.env.VITE_env_message)
-  console.log("envProd:", import.meta.env.PROD)
+  
+  fetchPostionGeoData(currentGeoPos.value)
+  // console.log("envLocal: ", envLocal.value)
+  // console.log("env message: ", import.meta.env.VITE_env_message)
+  // console.log("envProd:", import.meta.env.PROD)
 })
 </script>
 
 <template>
+ 
   <section class="mt-15">
     <!-- //One-Way Data Flow - drilled prop 'emitedValuePropRef' value in <MapComp  -->
-    <MapComp msg="mapcomponent" :initmapvalue="initPosData"
+    <MapComp msg="mapcomponent" :initmapvalue="computeGeoPosition"
       :init-pos-data-prop="foodDataStore.getFoodPositionDataByBanner"
       :country-pos-data-prop="foodDataStore.getCountryPositionData"
       :current-food-restaurants-prop="computeClickedTargetCatPosition" :initCoordsProp="emitedValuePropRef"
       :clickedPositionDataProp="computeClickedTargetPosition[0]" @emit-clicked-position-value="emitClickedPositionValue"
       ref="mapCompRef" />
-    <BannerComp @emit-position-value="emitPositionValue" :initPosDataProp="foodDataStore.getFoodPositionDataByBanner"
+    <BannerComp @emit-position-value="emitPositionValue" :initPosDataProp="computeGeoPosition"
       class="mb-5" />
   </section>
   <v-app>
@@ -198,7 +186,7 @@ onMounted(() => {
         <v-row justify="space-around">
           <v-col cols="auto">
             <v-responsive class="overflow-visible" width="450">
-              <h2 class="text-h4">
+              <h2 class="text-h4"> 
                 All agriculture in the netherlands
               </h2>
               <p class="mt-5">
@@ -215,33 +203,45 @@ onMounted(() => {
           <v-col cols="auto">
             <v-responsive class="overflow-visible" width="450">
               <h2 class="text-h4">
-                Pointed geo data
+                Point location to locate nearby agriculture farms
               </h2>
               <p class="mt-5">
                 Click on the map to discover where the nearest agriculture food farms are located. 
               </p>
-              <p class="mt-5 text-blue-darken-1">
-                Current position
-              </p>
-              <v-chip class="mt-2 mr-2" append-icon="$vuetify">
-               Lat: {{ emitedClickedValueReacive.coords.latitude }}
-              </v-chip>
-              <v-chip class="mt-2 mr-2" append-icon="$vuetify">
-               Lon: {{ emitedClickedValueReacive.coords.longitude }}
-              </v-chip>
-
+              <div v-if="computeClickedTargetPosition.length > 0">
+                <p class="mt-5 text-blue-darken-1">
+                  Current pointed position
+                </p>
+                <v-chip class="mt-2 mr-2" append-icon="$vuetify">
+                 Lat: {{ emitedClickedValueReacive.coords.latitude }}
+                </v-chip>
+                <v-chip class="mt-2 mr-2" append-icon="$vuetify">
+                 Lon: {{ emitedClickedValueReacive.coords.longitude }}
+                </v-chip>
+                <ul class="mt-5">
+                  <li v-for="(value, key, index) in computeClickedTargetPosition[0]">
+                    <span v-if="index == 0">
+                      City {{ key }}
+                    </span>
+                    <span v-else>
+                      {{ key }}
+                    </span>
+                    : {{ value }}
+                  </li>
+                </ul>
+              </div>
+              <div v-else>
+                <p class="mt-5 text-blue-darken-1">
+                  Current default position
+                </p>
+                <v-chip class="mt-2 mr-2" append-icon="$vuetify">
+                  Lat: {{ emitedClickedValueReacive.coords.latitude }}
+                 </v-chip>
+                 <v-chip class="mt-2 mr-2" append-icon="$vuetify">
+                  Lon: {{ emitedClickedValueReacive.coords.longitude }}
+                 </v-chip>
+              </div>
               
-              <ul class="mt-5">
-                <li v-for="(value, key, index) in computeClickedTargetPosition[0]">
-                  <span v-if="index == 0">
-                    City {{ key }}
-                  </span>
-                  <span v-else>
-                    {{ key }}
-                  </span>
-                  : {{ value }}
-                </li>
-              </ul>
 
             </v-responsive>
           </v-col>
@@ -285,12 +285,14 @@ onMounted(() => {
                 Total found foods:  <span class="my-3 text-blue-darken-1">{{ computeCountryFood.length }}</span> 
                 </h2>
                 <ul>
-                  <li class="mt-3"  v-if="!computeCountryFood.length == 0" v-for="(item, index) in foodDataStore.getSearchedCountryFood ">
+                  <li class="mt-3"  v-if="computeCountryFood.length > 0" v-for="(item) in foodDataStore.getSearchedCountryFood">
                   {{ item.title }}
+                  
                   </li>
+                  
                   <li class="my-3 text-blue-darken-1" v-else>
                     <span v-if="showloader">Loading..</span>
-                    <span v-else-if="!showloader">{{ searchedCountry ? `no food found in ${searchedCountry}` : "no selection" }}</span>
+                    <span v-else-if="!showloader">{{ computeCountryFood.length < 1 ? `no food found` : "no selection" }}</span>
                   </li>
                 </ul>
                 <p class="mt-5">
@@ -323,7 +325,7 @@ onMounted(() => {
                 </p>
               </div>
               <ul class="countries" v-show="showAllCountries">
-                <li v-for="(item, index) in computeGetCountries">
+                <li v-for="(item) in allCountryInfoObj">
                   <a href="#html" @click="fetchCountriePosition(item.name)">
                     {{ item.name }}
                     <span class="flag">{{ item.emoji }}</span>
@@ -348,7 +350,7 @@ onMounted(() => {
                     </h4>
                     <v-row>
                       <v-col cols="12" md="12">
-                        <v-autocomplete @blur="fetchFoodData(dataFindSelected)" clearable label="Land of origin" :items="foodDataStore.reactiveCurrentCuisines"
+                        <v-autocomplete @blur="fetchFoodData(dataFindSelected.currentLandOrigin)" clearable label="Land of origin" :items="foodDataStore.reactiveCurrentCuisines"
                           v-model="dataFindSelected.currentLandOrigin"></v-autocomplete>
                       </v-col>
                       <!-- <v-col cols="12" md="12">
@@ -365,8 +367,8 @@ onMounted(() => {
                   Total selected {{dataFindSelected.currentLandOrigin}} cuisines: <span class="text-blue-darken-1">{{ foodDataStore.getFoodDataByCuisine.length }}</span>
                 </h2>
                 <ul class="my-6">
-                  <li v-for="(item, index) in foodDataStore.getFoodDataByCuisine ">
-                    {{ item }}
+                  <li v-for="(item) in foodDataStore.getFoodDataByCuisine ">
+                    {{ item.title }}
                   </li>
                 </ul>
                 <p class="mt-5">

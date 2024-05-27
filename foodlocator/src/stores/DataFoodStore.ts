@@ -1,10 +1,18 @@
-import { defineStore } from "pinia";
+import { defineStore } from "pinia"; 
+
+import type { ObjectResults, ObjDataCountries, ArrayResults, ObjName, CuisineNameType, ReactiveCordsIntFace, SearchedCountryType} from './../types';
 
 //as the name of the file 'FoodStore.js'
 export const useFoodDataStore = defineStore("FoodDataStore", {
   //The state is defined as a function returning the initial state
   state: function () {
     return {
+      currentGeoPos: {
+        coords: {
+          latitude: 52.37031805385792,
+          longitude: 4.890289306640626
+        }
+      },
       //Static data
       reactiveCountryOrgins: [
         "Netherlands",
@@ -50,7 +58,6 @@ export const useFoodDataStore = defineStore("FoodDataStore", {
         "Spanish",
       ],
       clusterPositions: [
-        // [ 52.35303643511911, 4.895095825195313, "1 Amsterdam"],
         [51.90567656749997, 4.474182128906251, "2 Rotterdam"],
         [51.5051497, 3.5764998, "3 Middelburg"],
         [51.7148962, 5.2357782, "4 Denbosch"],
@@ -64,81 +71,61 @@ export const useFoodDataStore = defineStore("FoodDataStore", {
         [53.199451902831555, 5.770568847656251, "12 Leeuwarden"],
       ],
       //reactiveDataSet
-      reactiveFoodCuising: [],
+      valuePoi: {} as ObjName,
+      reactiveFoodCuising: {} as ArrayResults,
       reactiveClickedPosData: [],
-      reactiveClickedPosCatData: [],
+      reactiveClickedPosCatData: {} as ObjectResults,
       searchedCountryFoodData: [],
       reactivePositionData: [],
       reactiveOrigonPosData: [],
-      reactiveCountryPosData:[],
-      reactviefoodTitles: [],
-      reactiveClickedCatTitles: [],
+      reactiveCountryPosData:{} as ObjectResults,
+      reactviefoodTitles:[] as string[],
+      reactiveClickedCatTitles: [] as string[],
       reactiveFoodMenuDetails: [],
-      reactiveAllApiMenuDetails: [],
       reactviefoodOrigin: [],
-      reactiveCountrieData: [],
-      allCountryNames: [],
+      reactiveCountrieData: {} as ObjDataCountries,
+      allCountryNames: [] as string[],
+      allCountryInfoObj: [] as object[],
     };
+   
   },
   //Getters are synchronous functions used to retrieve data from the state
   getters: {
     getFoodDataByCuisine: function (state) {
-      //return this.reactiveFoodCuising.results
-      for (var key in this.reactiveFoodCuising.results) {
-       
-        state.reactviefoodTitles.push(
-          this.reactiveFoodCuising.results[key].title
-        );
-      }
+          for (let key in state.reactiveFoodCuising.results) {
+          state.reactviefoodTitles.push(
+            state.reactiveFoodCuising.results[key]
+          );
+        }
       return state.reactviefoodTitles;
     },
     getFoodPositionDataByClick: function (state) {
-      return this.reactiveClickedPosData;
+      return state.reactiveClickedPosData;
     },
     getSearchedCountryFood: function (state) {
-      return this.searchedCountryFoodData
+      // console.log(state.searchedCountryFoodData.length)
+      return state.searchedCountryFoodData
     },
     getFoodPositionCatDataByClick: function (state) {
       //loop over object with
-      for (var key in this.reactiveClickedPosCatData.results) {
-        //result
-        Object.entries(this.reactiveClickedPosCatData.results[key]).forEach(
-          ([key1, value]) => {
-            if (key1 == "poi") {
-              //push into new state array
-              state.reactiveClickedCatTitles.push(value.name);
-            }
-          }
-        );
-      }
-      return this.reactiveClickedCatTitles;
+      return state.reactiveClickedPosCatData.results
     },
     getFoodPositionDataByBanner: function (state) {
-      return this.reactiveOrigonPosData;
+      //plaatsnaam returned
+      console.log("state.reactiveOrigonPosData.lenght",state.reactiveOrigonPosData.length, 
+      "state.reactiveOrigonPosData",state.reactiveOrigonPosData, 
+      "state.currentGeoPos", state.currentGeoPos)
+      return state.reactiveOrigonPosData.length>0 ? state.reactiveOrigonPosData : state.currentGeoPos ;
     },
     getCountryPositionData: function (state) {
-      for (var key in this.reactiveCountryPosData.results) {
-        //result
-        if (this.reactiveCountryPosData.results[key].position) {
-          return this.reactiveCountryPosData.results[key].position
-        } else {
-          return {lat:"100",lon:"40"}
-        }
-      }
+      console.log('getCountryPositionData:',state.reactiveCountryPosData)
+      return state.reactiveCountryPosData.results
     },
-    getAllApiFoodOrigins: function (state) {
-      for (var key in this.reactiveAllApiMenuDetails.meals) {
-        state.reactviefoodOrigin.push(
-          this.reactiveAllApiMenuDetails.meals[key].strArea
-        );
-      }
-      return state.reactviefoodOrigin;
-    },
-    getAllCoutriesApi: function (state) {
+    getAllCountriesApi: function (state) {
       for (var key in this.reactiveCountrieData.data) {
         this.reactiveCountrieData.data.countries.forEach(
              element => {
-              state.allCountryNames.push(element.name)
+              state.allCountryInfoObj.push(element)
           });
         return this.reactiveCountrieData.data.countries;
       }
@@ -147,10 +134,10 @@ export const useFoodDataStore = defineStore("FoodDataStore", {
   //Actions are functions that can also be asynchronous which are used to update the state
   //For Mutating items within the store state, use actions
   actions: {
-    async fetchcuisine(param) {
+    async fetchcuisine(param:CuisineNameType) {
       const params = {
         apikey: import.meta.env.VITE_endpoint1apikey,
-        cuisine: param.currentLandOrigin,
+        cuisine: param,
       };
       const url = import.meta.env.VITE_endpoint1+params.apikey+'&cuisine='+params.cuisine;
       const options = {
@@ -168,7 +155,7 @@ export const useFoodDataStore = defineStore("FoodDataStore", {
           console.log("error", error);
         }));
     },
-    async fetchFoodOriginPosition(param) {
+    async fetchFoodOriginPosition(param:ReactiveCordsIntFace) {
       const params = {
         apikey: import.meta.env.VITE_endpoint2apikey,
         targetPos: param,
@@ -177,7 +164,6 @@ export const useFoodDataStore = defineStore("FoodDataStore", {
         const options = {
           method: "GET",
         };
-
       return (this.reactiveOrigonPosData = await fetch(url, options)
         .then(function (response) {
           return response.json();
@@ -187,7 +173,7 @@ export const useFoodDataStore = defineStore("FoodDataStore", {
           console.log("error", error);
         }));
     },
-    async fetchFoodOriginClickPos(param) {
+    async fetchFoodOriginClickPos(param:ReactiveCordsIntFace) {
       const params = {
         apikey: import.meta.env.VITE_endpoint2apikey,
         targetPos: param,
@@ -203,9 +189,10 @@ export const useFoodDataStore = defineStore("FoodDataStore", {
         })
         .catch((error) => {
           //request failed
+          console.log("error", error);
         }));
     },
-    async fetchSearchCountryFood(param) {
+    async fetchSearchCountryFood(param:SearchedCountryType) {
       const params = {
         apikey: import.meta.env.VITE_endpoint3apikey,
         targetParam: param,
@@ -223,17 +210,16 @@ export const useFoodDataStore = defineStore("FoodDataStore", {
           console.log("error", error);
         }));
     },
-    async fetchDataClickPos(param) {
+    async fetchDataClickPos(param:ReactiveCordsIntFace) {
       const params = {
         apikey: import.meta.env.VITE_endpoint4apikey,
         targetClickedPos: param,
       };
-      //const url = `https://api.tomtom.com/search/2/categorySearch/farms.json?key=${params.apikey}&typehead=false&lat=${params.targetClickedPos.coords.latitude}&lon=${params.targetClickedPos.coords.longitude}&radius=10000`;
-      const url = `${import.meta.env.VITE_endpoint4}${params.apikey}&typehead=false&lat=${params.targetClickedPos.coords.latitude}&lon=${params.targetClickedPos.coords.longitude}&radius=10000`;
+      console.log(param)
+      const url = `${import.meta.env.VITE_endpoint4}${params.apikey}&typehead=false&lat=${params.targetClickedPos.coords.latitude}&lon=${params.targetClickedPos.coords.longitude}&radius=10000`; 
       const options = {
         method: "GET",
       };
-
       return (this.reactiveClickedPosCatData = await fetch(url, options)
         .then(function (response) {
           return response.json();
@@ -270,12 +256,12 @@ export const useFoodDataStore = defineStore("FoodDataStore", {
           console.log("error", error);
         }));
     },
-    async fetchPositionCountries(param) {
+    async fetchPositionCountries(param:SearchedCountryType) {
+
       const params = {
         apikey: import.meta.env.VITE_endpoint6apikey,
         targetClickedPos: param,
       };
-      // const url = `https://api.tomtom.com/search/2/geocode/${params.targetClickedPos}.json?limit=1&key=${params.apikey}`;
       const url = `${import.meta.env.VITE_endpoint6}${params.targetClickedPos}.json?limit=1&${params.apikey}`;
       const options = {
         method: "GET",
