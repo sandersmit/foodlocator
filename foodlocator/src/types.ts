@@ -5,9 +5,35 @@ export interface ReactiveCordsIntFace {
     }
   }
 
+  export interface ReactivePosIntFace
+  {
+         name: string,
+         country: string,
+         state: string
+   }
+  
+  export interface LatlngClickIntFace {
+    latlng:{
+      lat:number
+      lng:number
+    }
+  }
+
+  export interface LatlngIntFace {
+    results:[{
+      position:{
+            lat:number,
+            lon:number
+      }
+    }]
+  }
+
 export interface CountrySearchType {
     emoji: string,
     name: string
+}
+export interface TitleType {
+  title: string,
 }
 
 export interface ObjectResults {
@@ -15,31 +41,23 @@ export interface ObjectResults {
 }
 
 export interface ArrayResults {
-  results:Array<string>
+  results:Array<object>
 }
 
-export interface clickedTitle {
-  name:string
+export interface ArrayObjects {
+  results:Array<object>
 }
-
 export interface ObjDataCountries {
   data:{
     countries:Array<object>
   }
 }
-
 export interface ObjData {
   data:{
     countries:Array<object>
   }
 }
 
-export interface ObjName {
-  value:{
-    name:string
-  }
-}
-
-export type CuisineNameType = string
-export type SearchedCountryType = string | undefined 
+export type CuisineNameType = string | null
+export type SearchedCountryType = string | null 
 

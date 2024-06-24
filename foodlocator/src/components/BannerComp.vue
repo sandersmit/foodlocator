@@ -1,40 +1,38 @@
 <script setup lang="ts">
-import { ref, reactive, computed, onMounted, defineProps } from 'vue'
+import { ref, reactive, computed, onMounted, ComputedRef} from 'vue'
 import { useFoodDataStore } from '../stores/DataFoodStore';
-import { storeToRefs } from "pinia";
 
 import type { ReactiveCordsIntFace } from './../types';
 
 const foodDataStore = useFoodDataStore();
 
-const { currentGeoPos, reactiveOrigonPosData} = storeToRefs(useFoodDataStore());
-const props =  defineProps({
-  initPosDataProp: {
-       type:Object,
-       required: false
-   }
-});
+const props = defineProps<{
+  initPosDataProp: ReactiveCordsIntFace,
+  reactiveCordsProp:ReactiveCordsIntFace
+}>()
 
 const activeBannerRef = ref(true)
+const showloader = ref(false)
 //data.currentposition.coords.longitude
 let reactiveCurrentCords:ReactiveCordsIntFace = reactive({
   coords: {
-    latitude: currentGeoPos.value.coords.latitude,
-    longitude: currentGeoPos.value.coords.longitude
+    latitude: props.reactiveCordsProp.coords.latitude,
+    longitude: props.reactiveCordsProp.coords.longitude
   }
 })
 
-const emit = defineEmits(['emit-position-value'])
+const emit = defineEmits(['emit-position-value','emit-current-position'])
 
 //METHODS
 function positionValueEmit() {
   console.log('position?')
+  showloader.value = true;
     if (navigator.geolocation) {
+      console.log("navigator get position..")
       navigator.geolocation.getCurrentPosition(showPosition);
     } else {
       console.log("Geolocation is not supported by this browser.")
     }
-  
 }
 function showPosition(position:ReactiveCordsIntFace) {
   console.log("position", position)
@@ -42,22 +40,30 @@ function showPosition(position:ReactiveCordsIntFace) {
        "Longitude:" + position.coords.longitude)
     emit('emit-position-value', position)
     activeBannerRef.value = false;
+    showloader.value = false;
     reactiveCurrentCords = position
   }
 
 
-const computeinitPosData = computed(function(){
- return foodDataStore.getFoodPositionDataByBanner.length == 1?foodDataStore.getFoodPositionDataByBanner[0].name:"loading..";
-  //return "loading..",reactiveOrigonPosData;
+const computeinitPosData :ComputedRef<string> = computed(function(){
+  //console.log(foodDataStore.getFoodPositionDataByBanner.length, foodDataStore.getFoodPositionDataByBanner[0].name)
+  emit('emit-current-position', foodDataStore.getFoodPositionDataByBanner[0].name)
+  return foodDataStore.getFoodPositionDataByBanner[0].name 
 })
 
 onMounted(() => {
   //initLocation
-  foodDataStore.fetchFoodOriginPosition(props.initPosDataProp)
+  console.log(typeof props.initPosDataProp)
+  //emit('emit-current-position', computeinitPosData.value)
+  //foodDataStore.fetchFoodOriginPosition(props.initPosDataProp)
 })
 </script>
 
 <template>
+  <!-- <hr>
+    ---------------banner.vue COMPONENT
+    <hr> -->
+  <!-- computeinitPosData:{{ computeinitPosData }} -->
   <Transition>
     <!-- <div v-if="activeBannerRef"> -->
       <v-banner v-if="activeBannerRef" class="custBanner" color="warning" icon="mdi-map-marker" lines="one">
@@ -65,15 +71,15 @@ onMounted(() => {
           Default city: <span class="text-blue-darken-1">{{computeinitPosData}}</span> -- This app rquires the location of the user, choose to Confirm for optimal UX
         </template>
         <template v-slot:actions>
-          <v-btn @click="positionValueEmit">Confirm</v-btn>
-          <!-- <v-btn @click="activeBannerRef=true">Cancel</v-btn> -->
+          <v-btn v-if="showloader">Loading position..</v-btn>
+          <v-btn v-else @click="positionValueEmit">Confirm</v-btn>
         </template>
       </v-banner>
     <!-- </div>
     <div v-else> -->
       <v-banner v-else id="custbanner" class="custBanner" color="success" icon="mdi-map-marker" lines="one">
         <template v-slot:text>
-          <span class="text-blue-darken-1">{{ computeinitPosData }} </span> is your current location : {{ reactiveCurrentCords.coords.latitude}} and {{reactiveCurrentCords.coords.longitude }}
+          <span class="text-blue-darken-1">{{ computeinitPosData }} </span> is your current location. Lat:{{ reactiveCurrentCords.coords.latitude}} & Lng:{{reactiveCurrentCords.coords.longitude }}
         </template>
       </v-banner>
     <!-- </div> -->
