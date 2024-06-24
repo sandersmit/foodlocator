@@ -57,13 +57,13 @@ function emitPositionValue(argument:ReactiveCordsIntFace) {
 }
 
 function emitCurrentPosition(argument:string) {
-  console.log("emit?",argument)
+  // console.log("emit?",argument)
   currentBannerPositon.value = argument
 }
 
 //One-Way Data Flow - emited to prop
 function emitClickedPositionValue(argument:ReactiveCordsIntFace) {
-  console.log(argument)
+  //console.log(argument)
   reactiveCords.coords.latitude = argument.coords.latitude;
   reactiveCords.coords.longitude = argument.coords.longitude;
   foodDataStore.fetchFoodOriginClickPos(reactiveCords)

@@ -19,9 +19,6 @@ interface Props {
 }
 const props = defineProps<Props>()
 
-// var latlng = L.latLng(computeInitCoords.value);
-let latlng = ref()
-
 const foodDataStore = useFoodDataStore();
 //destructure parts of the store
 const { clusterPositions } = storeToRefs(useFoodDataStore());
@@ -279,7 +276,7 @@ watch(computeInitCoords, () => {
 
 watch(computeClickedPosition, () => {
      console.log('computeClickedPosition')
-  setContentPopup(reactiveCords)
+  setContentPopup()
  
 })
 
