@@ -19,9 +19,6 @@ interface Props {
 }
 const props = defineProps<Props>()
 
-// var latlng = L.latLng(computeInitCoords.value);
-let latlng = ref()
-
 const foodDataStore = useFoodDataStore();
 //destructure parts of the store
 const { clusterPositions } = storeToRefs(useFoodDataStore());
@@ -39,8 +36,6 @@ const isDefaultMapStyle = ref(true)
 const buildmapStat = ref(false)
 const currentMapStyle = ref();
 
-
-
 let reactiveCords:ReactiveCordsIntFace = reactive({
   coords: {
     latitude: props.reactiveCordsProp.coords.latitude,
@@ -51,15 +46,12 @@ let reactiveCords:ReactiveCordsIntFace = reactive({
 
 //METHODS
 function initMap() {
-  
   if (map.value != null) {
-    console.log('init first remove')
    map.value.remove(); 
    buildMap(true)
     //refactor for dynamic selected cuising from api
     addMarker('african')
   } else {
-    console.log('init fresh')
     buildMap(true)
     //refactor for dynamic selected cuising from api
     addMarker('Thai')
@@ -68,8 +60,6 @@ function initMap() {
 }
 
 function buildMap(zoomAniBoolean:boolean) {
-console.log("computeInitCoords.value",computeInitCoords.value)
-//latlng = ref(L.latLng(computeInitCoords.value))
   //option zoomAnimation:false is manditory setting because of bug. needs fix to set to : true
   map.value = L.map('map', { 
     zoomAnimation: false,
@@ -85,7 +75,6 @@ console.log("computeInitCoords.value",computeInitCoords.value)
   buildmapStat.value = true;
   const contentContainer = document.createElement("div");
   createMarker(contentContainer)
-  console.log('buildMap.. done')
 }
 
 ////////////////////////////
@@ -95,7 +84,6 @@ function addClusterMarkers() {
   const markersClusterGroup = (L as any).markerClusterGroup();
   //an type array with type numbers and type strings. 
   let element:Array<any>;
-    
   for (element of clusterPositions.value) {  
     let title:string = element[2]
     let lng:number = element[0]
@@ -104,8 +92,6 @@ function addClusterMarkers() {
     const clustmarker:any = L.marker([lng, lat],{ title: title }).addTo(markersClusterGroup);
     clustmarker.bindPopup(title)
   }
-  // console.log(typeof markersClusterGroup)
-  // console.log(typeof arrayRefIds.value)
   arrayRefIds.value.push(markersClusterGroup)
   markersClusterGroup.addTo(map.value)
 }
@@ -119,42 +105,23 @@ function removeNewMarker() {
   });
 }
 
-// function setMapStyle(arg:boolean){
-//   isDefaultMapStyle.value = arg;
-//   initMap()
-// }
-
 function setClusters() {
-  //console.log('setclusters')
   map.value.flyTo([52.37031805385792, 4.890289306640626], 6);
     //toggle mapstyle
     //isDefaultMapStyle.value ? initMap() : setMapStyle(true)
   if (!isClusterActive.value) {
     isClusterActive.value = true
-    console.log('addclusters', isClusterActive.value)
     addClusterMarkers()
-    //return isClusterActive.value
   } else {
     isClusterActive.value = false
-    console.log('removeclusters', isClusterActive.value)
     removeNewMarker()
-    //return isClusterActive.value
   }
-  
-  //isClusterActive.value ? map.value.addLayer(markers) : 
 }
 
 function onMapClick(e:LatlngClickIntFace) {
-  //let Clickedcoords = e.latlng;
-  //console.log(e)
   reactiveCords.coords.latitude = e.latlng.lat
   reactiveCords.coords.longitude = e.latlng.lng
-  //console.log(reactiveCords)
   emitClickedPos('emit-clicked-position-value', reactiveCords)
-  // setContentPopup(reactiveCords)
-// isDefaultMapStyle.value ? '' : setMapStyle(true)
-
-
 }
 
 function createMarker(contentContainer:HTMLElement) {
@@ -189,17 +156,10 @@ function setContentPopup() {
     let newString:any|string;
     newString = Object.values(element.poi)[0]
     let liEl = document.createElement("li");
-    // console.log(Object.values(element.poi)[0])
     listUl.append(liEl)
     liEl.append(newString)
   });
-
-  console.log(typeof computeRadiusData.value, computeRadiusData.value.results)
-  //const latlng = L.latLng(arg.coords.latitude, arg.coords.longitude);
-  
   clickedPopup.setLatLng(computeInitCoords.value).setContent(contentContainer).openOn(map.value);
-  // map.value.setView([arg.coords.latitude, arg.coords.longitude], 6);
-
 }
 
 async function addMarker(cuisine:CuisineNameType) {
@@ -240,7 +200,6 @@ const computeClickedPosition:ComputedRef<any> = computed(function () {
   if (props.clickedPositionDataProp) {
     let cityName;
     cityName = Object.values(props.clickedPositionDataProp)[0].name
-    console.log( typeof props.clickedPositionDataProp, props.clickedPositionDataProp, cityName)
     return cityName;
   }
 })
@@ -257,34 +216,25 @@ const computeMapStyle = computed(function () {
 })
 
 const computeRadiusData:ComputedRef<ObjectResults> = computed(function () {
-  console.log(props.clickedRadiusDataProp)
   return props.clickedRadiusDataProp
 })
 
 const computeCurrentCityName = computed(function () {
   let posData;
   posData = Object.values(props.initPosDataProp)
-  //console.log(props.initPosDataProp.length, posData[0], Object.values(posData[0])[0])
   return props.initPosDataProp.length > 0 ? Object.values(posData[0])[0] : 'loading..'
-
 })
 
 //WATCH
 watch(computeInitCoords, () => {
-  console.log('computeInitCoords')
-  console.log('computeInitCoords.value[0], [1]', computeInitCoords.value[0], computeInitCoords.value[1])
   map.value.flyTo([computeInitCoords.value[0], computeInitCoords.value[1]], 6);
-  //initMap()
 })
 
 watch(computeClickedPosition, () => {
-     console.log('computeClickedPosition')
-  setContentPopup(reactiveCords)
- 
+  setContentPopup()
 })
 
 watch(computeCurrentCityName, () => {
-  console.log('computeCurrentCityName')
   //watching when cityname is loaded, the initMap is fired. 
   computeCurrentCityName.value ? initMap() : 'waiting for name before map loads'   
 
@@ -296,30 +246,12 @@ defineExpose({
   isClusterActive,
   isDefaultMapStyle
 });
-
-onMounted(() => {
-  //initMap()
-})
 </script>
 
 <template>
   <div id="map" class="mapcomp mt-15">
     
   </div>
-    <!-- <hr>
-    ---------------MAP COMPONENT
-    <hr> -->
-    <!-- {{ foodDataStore.getCountryPositionData }} -->
-    <!-- props.reactiveCordsProp:{{ props.reactiveCordsProp }}<br>
-    props.initMapValue:{{ props.initMapValue }}<br> -->
-    <!-- props.initPosDataProp:{{ props.initPosDataProp }}<br> -->
-    <!-- props.initCoordsProp:{{ props.initCoordsProp }}<br>
-    props.countryPosDataProp?: {{ props.countryPosDataProp.results[0].position.lat }} - {{props.countryPosDataProp.results[0].position.lon}}<br> -->
-    <!--  props.clicked-radius-data-prop:{{ props.clickedRadiusDataProp }}<br>
-    props.clickedPositionDataProp: {{ props.clickedPositionDataProp }}<br> -->
-    <!-- //COMPUTED<br> -->
-    <!-- computeCurrentCityName: {{ computeCurrentCityName }}<br>
-    computeInitCoords: {{ computeInitCoords }}<br> -->
 </template>
 
 <style lang="scss">

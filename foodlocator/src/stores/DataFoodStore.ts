@@ -114,7 +114,6 @@ export const useFoodDataStore = defineStore("FoodDataStore", {
       return state.reactiveClickedPosData;
     },
     getSearchedCountryFood: function (state) {
-      console.log("state.searchedCountryFoodData",state.searchedCountryFoodData)
       return state.searchedCountryFoodData
     },
     getFoodPositionCatDataByClick: function (state) {
@@ -122,15 +121,9 @@ export const useFoodDataStore = defineStore("FoodDataStore", {
       return state.reactiveClickedPosCatData
     },
     getFoodPositionDataByBanner: function (state) {
-      //plaatsnaam returned
-      // console.log("state.reactiveOrigonPosData.lenght",state.reactiveOrigonPosData.length, 
-      // "state.reactiveOrigonPosData",state.reactiveOrigonPosData, 
-      // "state.staticStoreGeoPos", state.staticStoreGeoPos)
-      //return state.reactiveOrigonPosData.length>0 ? state.reactiveOrigonPosData : state.staticStoreGeoPos ;
       return state.reactiveOrigonPosData;
     },
     getCountryPositionData: function (state) {
-      console.log('getCountryPositionData:',state.reactiveCountryPosData)
       return state.reactiveCountryPosData
     },
     getAllCountriesNames: function (state) {
@@ -138,10 +131,8 @@ export const useFoodDataStore = defineStore("FoodDataStore", {
       for (let _key in state.reactiveCountrieData.data) {
         state.reactiveCountrieData.data.countries.forEach(
              element => {
-              // console.log(element)
               countrieName = Object.values(element)[2]
               state.allCountryInfoObj.push(countrieName)
-
           });
         return state.allCountryInfoObj;
       }
@@ -169,7 +160,6 @@ export const useFoodDataStore = defineStore("FoodDataStore", {
       //fetching fetchFoodCategorie
       return (this.reactiveFoodCuising = await fetch(url, options)
         .then(function (response) {
-         // console.log('api response: ',response.ok)
           return response.json();
         })
         .catch((error) => {
