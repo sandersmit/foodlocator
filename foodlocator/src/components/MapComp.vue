@@ -89,18 +89,42 @@ console.log("computeInitCoords.value",computeInitCoords.value)
 //markers for cluster groups
 function addClusterMarkers() {
   //let layergroup = L.layerGroup()
+  
   const markersClusterGroup = (L as any).markerClusterGroup();
   //an type array with type numbers and type strings. 
-  let element:Array<any>;
+  //let element:Array<any>;
+    // for (let i = 0; i < clusterPositions.value.length; i++) {
+    // let title:string = clusterPositions.value[2]
+    // let info:string = clusterPositions.value[3]
+    // let lng:number = clusterPositions.value[0]
+    // let lat:number = clusterPositions.value[1]
+    // console.log('title',title)
+    // console.log('title',info)
+    // //layer
+    // const clustmarker:any = L.marker([lng, lat],{ title: info }).addTo(markersClusterGroup);
+    // clustmarker.bindPopup(info)
+    // }
     
-  for (element of clusterPositions.value) {  
-    let title:string = element[2]
-    let lng:number = element[0]
-    let lat:number = element[1]
-    //layer
-    const clustmarker:any = L.marker([lng, lat],{ title: title }).addTo(markersClusterGroup);
-    clustmarker.bindPopup(title)
-  }
+    clusterPositions.value.forEach(element => {
+      console.log(element[0],element[1], element[2], element[3])
+        let title:string = element[2]
+        let info:string = element[3]
+        let lng:number = element[0]
+        let lat:number = element[1]
+        var popup = L.popup({content: `<h2>${title}</h2><p>${info}</p>`});
+      const clustmarker:any = L.marker([lng,lat]).addTo(markersClusterGroup);
+      clustmarker.bindPopup(popup)
+    });
+  // for (element of clusterPositions.value) {  
+  //   let title:string = element[2]
+  //   let info:string = element[3]
+  //   let lng:number = element[0]
+  //   let lat:number = element[1]
+  //   console.log(title, info)
+  //   //layer
+  //   const clustmarker:any = L.marker([lng, lat],{ title: info }).addTo(markersClusterGroup);
+  //   clustmarker.bindPopup(info)
+  // }
   // console.log(typeof markersClusterGroup)
   // console.log(typeof arrayRefIds.value)
   arrayRefIds.value.push(markersClusterGroup)
@@ -137,7 +161,6 @@ function setClusters() {
     removeNewMarker()
     //return isClusterActive.value
   }
-  
   //isClusterActive.value ? map.value.addLayer(markers) : 
 }
 
@@ -196,7 +219,6 @@ function setContentPopup() {
   
   clickedPopup.setLatLng(computeInitCoords.value).setContent(contentContainer).openOn(map.value);
   // map.value.setView([arg.coords.latitude, arg.coords.longitude], 6);
-
 }
 
 async function addMarker(cuisine:CuisineNameType) {

@@ -1,5 +1,4 @@
 import { defineStore } from "pinia"; 
-
 import type { ObjectResults, ObjDataCountries, ArrayResults, CuisineNameType, ReactiveCordsIntFace ,SearchedCountryType, LatlngIntFace} from './../types';
 
 //as the name of the file 'FoodStore.js'
@@ -59,17 +58,17 @@ export const useFoodDataStore = defineStore("FoodDataStore", {
         "Spanish",
       ],
       clusterPositions: [
-        [51.90567656749997, 4.474182128906251, "2 Rotterdam"],
-        [51.5051497, 3.5764998, "3 Middelburg"],
-        [51.7148962, 5.2357782, "4 Denbosch"],
-        [52.0842635, 5.0000913, "5 Utrecht"],
-        [50.8578761, 5.6185061, "6 Maastricht"],
-        [52.0056928, 5.8141985, "Arnhem 7"],
-        [52.51660546750251, 5.490417480468751, "Lelystad 8"],
-        [52.993960810438914, 6.560211181640626, "9 Assen"],
-        [52.50929333176149, 6.097412109375001, "10 Zwolle"],
-        [53.2082473529397, 6.557464599609376, "11 Groningen"],
-        [53.199451902831555, 5.770568847656251, "12 Leeuwarden"],
+        [51.90567656749997, 4.474182128906251,"Rotterdam","location information"],
+        [51.5051497, 3.5764998, "Middelburg","location information"],
+        [51.7148962, 5.2357782, "Denbosch","location information"],
+        [52.0842635, 5.0000913, "5 Utrecht","location information"],
+        [50.8578761, 5.6185061, "6 Maastricht","location information"],
+        [52.0056928, 5.8141985, "Arnhem","location information"],
+        [52.51660546750251, 5.490417480468751, "Lelystad","location information"],
+        [52.993960810438914, 6.560211181640626, "Assen","location information"],
+        [52.50929333176149, 6.097412109375001, "Zwolle","location information"],
+        [53.2082473529397, 6.557464599609376, "Groningen","location information"],
+        [53.199451902831555, 5.770568847656251, "Leeuwarden","location information"],
       ],
       //reactiveDataSet
       reactiveFoodCuising: {} as ArrayResults,
@@ -161,7 +160,7 @@ export const useFoodDataStore = defineStore("FoodDataStore", {
         apikey: import.meta.env.VITE_endpoint1apikey,
         cuisine: param,
       };
-      const url = import.meta.env.VITE_endpoint1+params.apikey+'&cuisine='+params.cuisine;
+      //const url = import.meta.env.VITE_endpoint1+params.apikey+'&cuisine='+params.cuisine;
       const options = {
         method: "GET",
       };
@@ -200,7 +199,7 @@ export const useFoodDataStore = defineStore("FoodDataStore", {
         apikey: import.meta.env.VITE_endpoint2apikey,
         targetPos: param,
       };
-      const url =`${import.meta.env.VITE_endpoint2}${params.apikey}&lat=${params.targetPos.coords.latitude}&lon=${params.targetPos.coords.longitude}`;
+      //const url =`${import.meta.env.VITE_endpoint2}${params.apikey}&lat=${params.targetPos.coords.latitude}&lon=${params.targetPos.coords.longitude}`;
         const options = {
           method: "GET",
         };
@@ -219,7 +218,7 @@ export const useFoodDataStore = defineStore("FoodDataStore", {
         apikey: import.meta.env.VITE_endpoint3apikey,
         targetParam: param,
       };
-     const url = `${import.meta.env.VITE_endpoint3}${params.apikey}&query=${params.targetParam}`;
+    // const url = `${import.meta.env.VITE_endpoint3}${params.apikey}&query=${params.targetParam}`;
       const options = {
         method: "GET",
       };
@@ -238,7 +237,7 @@ export const useFoodDataStore = defineStore("FoodDataStore", {
         targetClickedPos: param,
       };
       console.log(param)
-      const url = `${import.meta.env.VITE_endpoint4}${params.apikey}&typehead=false&lat=${params.targetClickedPos.coords.latitude}&lon=${params.targetClickedPos.coords.longitude}&radius=10000`; 
+     // const url = `${import.meta.env.VITE_endpoint4}${params.apikey}&typehead=false&lat=${params.targetClickedPos.coords.latitude}&lon=${params.targetClickedPos.coords.longitude}&radius=10000`; 
       const options = {
         method: "GET",
       };
@@ -252,7 +251,7 @@ export const useFoodDataStore = defineStore("FoodDataStore", {
         }));
     },
     async fetchDataCountries() {
-      const url = `${import.meta.env.VITE_endpoint7}`;
+    //  const url = `${import.meta.env.VITE_endpoint7}`;
       const options = {
         method: "POST",
         headers: {
@@ -283,7 +282,7 @@ export const useFoodDataStore = defineStore("FoodDataStore", {
         apikey: import.meta.env.VITE_endpoint6apikey,
         targetClickedPos: param,
       };
-      const url = `${import.meta.env.VITE_endpoint6}${params.targetClickedPos}.json?limit=1&${params.apikey}`;
+      //const url = `${import.meta.env.VITE_endpoint6}${params.targetClickedPos}.json?limit=1&${params.apikey}`;
       const options = {
         method: "GET",
       };
