@@ -52,7 +52,12 @@ const firebaseConfig = {
 
 
 //write
-  function writeUserData(usernameVal,emailVal,locationVal, inputLatVal, inputLngVal ) {
+  function writeUserData(
+    usernameVal:string,
+    emailVal:string,
+    locationVal:string, 
+    inputLatVal:string, 
+    inputLngVal:string ) {
     console.log('write..')
       const postListRef = ref(database, 'posts');
       const newPostRef = push(postListRef);

@@ -4,26 +4,20 @@ import { useFoodDataStore } from './stores/DataFoodStore';
 import { storeToRefs } from "pinia";
 
 import { onValue } from 'firebase/database';
-import { writeUserData, dbRef, random, database} from "./firebase";
+import { writeUserData, dbRef} from "./firebase";
 
 //Importing components
 import MapComp from './components/MapComp.vue'
 import BannerComp from './components/BannerComp.vue'
 
 //TS interfaces
-import type { ReactiveCordsIntFace, SearchedCountryType, ObjectResults } from './types';
+import type { ReactiveCordsIntFace, SearchedCountryType, ObjectResults, ObjectUserPosts } from './types';
 
 const foodDataStore = useFoodDataStore();
 
 //destructure parts of the store
 const { staticStoreGeoPos } = storeToRefs(useFoodDataStore());
 
-const dataFindSelected = reactive({
-  currentIngredientName: "",
-  currentLandOrigin: null,
-  targetCountry: null,
-  currentLandLocation: null
-})
 
 const reactiveCords: ReactiveCordsIntFace = reactive({
   coords: {
@@ -40,7 +34,6 @@ const currentBannerPositon = ref()
 const locationUser = ref(false)
 const showAllCountries = ref(false)
 const pages = ref(1)
-const searchedCountry = ref<SearchedCountryType>(null)
 const showloader = ref(false)
 const pointed = ref(false)
 const foodName = ref()
@@ -138,28 +131,13 @@ function sendToFirbase(){
   }
 }
 
-// function readFromFirebase(){
-//   get(dbRef).then((snapshot) => {
-//     if (snapshot.exists()) {
-//       console.log(snapshot.val());
-//       console.log(snapshot);
-//       reactiveRef.value = snapshot.val()
-//       //return reactive.value;
-//     } else {
-//       console.log("No data available");
-//     }
-//   }).catch((error) => {
-//     console.error(error);
-//   });
-// }
-
 onValue(dbRef, (snapshot) => {
   const data = snapshot.val();
   reactiveRef.value = snapshot.val()
 });
 
 //COMPUTED
-const computeReadUserData: ComputedRef<string> = computed(function () {
+const computeReadUserData: ComputedRef<ObjectUserPosts> = computed(function () {
   console.log('reactiveRef.value', reactiveRef.value)
   return reactiveRef.value ? reactiveRef.value.posts : 'no values'
   //random(4)

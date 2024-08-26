@@ -40,6 +40,16 @@ export interface ObjectResults {
   results:object
 }
 
+export interface ObjectUserPosts {
+  posts:{
+    username:string
+    email:string
+    location:string
+    inputlat:string
+    inputlng:string
+  }
+}
+
 export interface ArrayResults {
   results:Array<object>
 }
