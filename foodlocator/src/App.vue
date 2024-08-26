@@ -2,7 +2,9 @@
 import { ref, reactive, computed, watch, onMounted, ComputedRef } from 'vue';
 import { useFoodDataStore } from './stores/DataFoodStore';
 import { storeToRefs } from "pinia";
-import { writeUserData, readUserData } from "./firebase";
+
+import { onValue } from 'firebase/database';
+import { writeUserData, dbRef, random, database} from "./firebase";
 
 //Importing components
 import MapComp from './components/MapComp.vue'
@@ -42,8 +44,13 @@ const searchedCountry = ref<SearchedCountryType>(null)
 const showloader = ref(false)
 const pointed = ref(false)
 const foodName = ref()
+const inputLat = ref()
+const inputLng = ref()
+
 const locationName = ref()
 const countryName = ref()
+const reactiveRef = ref()
+const distanceRef = ref()
 //Vite Env Variables are type:string - convert it to boolean
 //const envLocal = ref(import.meta.env.VITE_env_local)
 
@@ -113,10 +120,50 @@ function toggleCountries() {
   showAllCountries.value = !showAllCountries.value
 }
 
+function sendToFirbase(){
+  if( !foodName.value || !locationName.value || !countryName.value ){
+    console.log("do nothing");
+  }else{
+    //computeCountryPositionData
+    inputLat.value = computeCountryPositionData.value[0]
+    inputLng.value = computeCountryPositionData.value[1]
+    writeUserData(foodName.value, locationName.value, countryName.value, inputLat.value , inputLng.value  )
+    
+    //set true to remove markers
+    if(mapCompRef.value.isClusterActive){
+      document.querySelector('.v-selection-control__input input').click();
+      mapCompRef.value.isClusterActive = true
+      mapCompRef.value.setClusters()
+    }
+  }
+}
+
+// function readFromFirebase(){
+//   get(dbRef).then((snapshot) => {
+//     if (snapshot.exists()) {
+//       console.log(snapshot.val());
+//       console.log(snapshot);
+//       reactiveRef.value = snapshot.val()
+//       //return reactive.value;
+//     } else {
+//       console.log("No data available");
+//     }
+//   }).catch((error) => {
+//     console.error(error);
+//   });
+// }
+
+onValue(dbRef, (snapshot) => {
+  const data = snapshot.val();
+  reactiveRef.value = snapshot.val()
+});
+
 //COMPUTED
 const computeReadUserData: ComputedRef<string> = computed(function () {
-  console.log('computeReadUserData', readUserData)
-  return readUserData
+  console.log('reactiveRef.value', reactiveRef.value)
+  return reactiveRef.value ? reactiveRef.value.posts : 'no values'
+  //random(4)
+ 
 })
 
 const computeGeoPosition: ComputedRef<ReactiveCordsIntFace> = computed(function () {
@@ -192,6 +239,7 @@ const computeCuisineMenuTitles = computed(function () {
 })
 
 const computeCountryPositionData = computed(function () {
+  console.log("computeCountryPositionData??")
   let array: number[] = [];
   array.length = 0;
   foodDataStore.getCountryPositionData.results.forEach(
@@ -203,6 +251,11 @@ const computeCountryPositionData = computed(function () {
   return array
 })
 
+
+const computeLocationName = computed(function () {
+   countryName.value? foodDataStore.fetchPositionCountries(countryName.value):'nothing'
+   return countryName.value
+})
 //WATCH
 watch(computeCoordsBanner, () => {
   console.log('computeCoordsBanner')
@@ -212,9 +265,16 @@ watch(computeCountryPositionData, () => {
   console.log('computeCountryPositionData')
 })
 
+watch(computeLocationName, () => {
+  console.log('computeLocationName')
+})
+
+
+
 onMounted(() => {
   // fetchCountries()
   fetchPostionGeoData(staticStoreGeoPos.value)
+  //readFromFirebase()
   // console.log("envLocal: ", envLocal.value)
   // console.log("env message: ", import.meta.env.VITE_env_message)
   // console.log("envProd:", import.meta.env.PROD)
@@ -223,33 +283,16 @@ onMounted(() => {
 
 <template>
   <section class="mt-15">
-    <!-- <hr>
-    ---------------App.vue COMPONENT
-    <hr> -->
-    <!-- //One-Way Data Flow - drilled prop 'emitedValuePropRef' value in <MapComp  -->
-    <!-- Emited coords to fetch Cityname from confirmed position banner: {{ computeCoordsBanner }}<br> -->
-    <!--  :init-map-value="{{computeGeoPosition}}"<br> -->
-    <!-- reactiveCords-latitude: {{reactiveCords.coords.latitude}}<br>
-      reactiveCords-longitude: {{reactiveCords.coords.longitude}}<br> 
-      <hr> -->
-
-    <!-- :reactive-cords-prop="{{ reactiveCords }}"<br>
-      
-      :init-pos-data-prop="{{foodDataStore.getFoodPositionDataByBanner}}"<br>
-      :init-coords-prop="{{computeCoordsPosition}}"<br>
-      :country-pos-data-prop="{{foodDataStore.getCountryPositionData}}"<br> -->
-
-    <!--:clicked-radius-data-prop="{{computeClickedTargetCatPosition}}"<br>
-      :clicked-position-data-prop="{{computeClickedTargetPosition}}"<br> -->
-    <!-- <br>
-      <hr>
-      computeCoordsBanner: {{computeCoordsBanner}}<br>
-      computeCountryPositionData: {{ computeCountryPositionData }} -->
-    <MapComp :reactive-cords-prop="reactiveCords" :init-map-value="computeGeoPosition"
-      :init-pos-data-prop="foodDataStore.getFoodPositionDataByBanner" :init-coords-prop="computeCoordsBanner"
+    <MapComp 
+      :reactive-cords-prop="reactiveCords"
+      :init-map-value="computeGeoPosition"
+      :init-pos-data-prop="foodDataStore.getFoodPositionDataByBanner" 
+      :init-coords-prop="computeCoordsBanner"
       :country-pos-data-prop="foodDataStore.getCountryPositionData"
       :clicked-radius-data-prop="computeClickedTargetCatPosition"
-      :clicked-position-data-prop="computeClickedTargetPosition" @emit-clicked-position-value="emitClickedPositionValue"
+      :clicked-position-data-prop="computeClickedTargetPosition"
+      :user-added-data-prop="computeReadUserData" 
+      @emit-clicked-position-value="emitClickedPositionValue"
       ref="mapCompRef" />
     <BannerComp @emit-position-value="emitPositionValue" @emit-current-position="emitCurrentPosition"
       :initPosDataProp="computeGeoPosition" :reactive-cords-prop="reactiveCords" class="mb-5" />
@@ -268,13 +311,12 @@ onMounted(() => {
     <section id="grid" class="">
       <v-container>
         <v-row justify="space-around">
-          
           <v-col cols="auto">
             <v-responsive class="overflow-visible">
-            <v-form @submit.prevent>
+            <v-form @submit.prevent class="py-10">
               <v-container>
                 <h4 class="text-h5 pb-5">
-                  Insert new world foodIngredient
+                  Insert new location 
                 </h4>
                 <v-row>
                   <v-col cols="3" md="3">
@@ -282,24 +324,69 @@ onMounted(() => {
                   </v-col>
                   <v-col cols="3" md="3">
                     <v-autocomplete clearable label="Food category"
-                      :items="['California', 'Colorado', 'Florida', 'Georgia', 'Texas', 'Wyoming']" v-model="locationName"></v-autocomplete>
+                      :items="['California', 'Colorado', 'Florida', 'Georgia', 'Texas', 'Wyoming']"
+                       v-model="locationName"></v-autocomplete>
                   </v-col>
                   <v-col cols="3" md="3">
                     <v-autocomplete clearable label="Land of origin"
-                      :items="['California', 'Colorado', 'Florida', 'Georgia', 'Texas', 'Wyoming']" v-model="countryName"></v-autocomplete>
+                      :items="['California', 'Colorado', 'Florida', 'Georgia', 'Texas', 'Wyoming', 'Enkhuizen', 'Alkmaar', 'Paris']"
+                      v-model="countryName"
+                      
+                     ></v-autocomplete>
                   </v-col>
                   <v-col cols="3" md="3">
-                    <v-btn type="submit" @click="writeUserData(foodName, locationName, countryName )" block>Submit</v-btn>
+                    <v-autocomplete clearable label="Select distance KM"
+                      :items="[1, 2, 3, 4, 5, 6]"
+                      v-model="distanceRef"
+                      
+                     ></v-autocomplete>
+                  </v-col>
+                </v-row>
+                <v-row>
+                  <v-col>
+                    <v-radio-group inline label="What transport are you using?">
+                      <v-radio label="Walking" value="Walking"></v-radio>
+                      <v-radio label="Bicycle" value="Bicycle"></v-radio>
+                      <v-radio label="Car" value="Car"></v-radio>
+                    </v-radio-group>
+                  </v-col>
+                </v-row>
+                <v-row>
+                  <v-col cols="3" md="3">
+                    <v-btn type="submit" @click="sendToFirbase" block>Submit</v-btn>
                   </v-col>
                 </v-row>
               </v-container>
             </v-form>
-            {{ readUserData }}
-            <!-- {{computeReadUserData}} -->
+            <v-divider class="border-opacity-25 pb-5" ></v-divider>
+           
+            <v-container>
+              <v-row justify="space-between">
+              <h3 class="text-h5 pb-5">
+                Current known locations  
+              </h3>
+              <v-chip class="text-success" append-icon="$vuetify">
+                Total: {{Object.entries(computeReadUserData).length}}
+              </v-chip>
+              </v-row>
+              <v-row >
+              <v-col cols="3"  v-for="(value, key, index) in computeReadUserData">
+              <ul >
+                <li class="text-info">Location:{{index}}</li>
+                <li>Name: {{ value.username }}</li>
+                <li>Email: {{ value.email }}</li>
+                <li>Location: {{ value.location }}</li>
+                <li>inputLat: {{ value.inputlat }}</li>
+                <li>inputLng: {{ value.inputlng }}</li>
+                <li><a  href="#html" @click="fetchCountriePosition(value.location)">Show {{value.location}} on map</a></li>
+              </ul> 
+            </v-col>
+            </v-row>
+            </v-container>
           </v-responsive>
-            <v-responsive class="overflow-visible" >
+            <v-responsive class="overflow-visible py-16" >
               <h2 class="text-h4">
-                All agriculture in the netherlands
+                All agriculture in the netherlands | page {{ pages }}
               </h2>
               <p class="mt-5">
                 <span class="text-blue-darken-1">{{ computeIsCluster ? "Show all farmers" : "Don't show all farmers"
@@ -309,7 +396,7 @@ onMounted(() => {
                 All agriculture comppanies in the netherlands that are producing. Agriculture is economy of the country.
                 The country's economy depends on agriculture.
               </p>
-              <v-switch @click="mapCompRef.setClusters()" color="info" inset
+              <v-switch @click="mapCompRef.setClusters()" color="info" inset class="Vswitch"
                 :label="`Toggle all farmers on the map ${computeIsCluster}`" false-value="no"
                 true-value="yes"></v-switch>
             </v-responsive>
@@ -353,6 +440,7 @@ onMounted(() => {
         </v-row>
       </v-container>
     </section>
+    <v-pagination v-model="pages" :length="15" :total-visible="7" rounded="0" />
     <!-- <v-sheet class="py-16">
       <section>
         <v-container>
@@ -502,12 +590,18 @@ onMounted(() => {
         </v-container>
       </section>
     </v-sheet> -->
+    
     <v-main class="pt-0">
       <section id="hero">
-        <v-sheet class="d-flex align-center py-16" color="grey-darken-3">
-          <v-container class="text-center">
-            <v-row justify="space-between">
+        <v-sheet class="d-flex align-center py-16" color="grey-darken-3"> 
+          <v-container >
+            <h2 class="text-h4">
+            How it works 
+          </h2>
+            <v-row justify="space-between" class="text-center">
+              
               <v-col cols="auto">
+               
                 <v-responsive class="mx-auto mt-4" max-width="250">
                   <v-img max-width="400" src="https://cdn.vuetifyjs.com/store/themes/vite-free/slider.png" />
                   <h3 class="text-h3 mt-4">
@@ -533,7 +627,6 @@ onMounted(() => {
                   </p>
                 </v-responsive>
               </v-col>
-
               <v-col cols="auto">
                 <v-responsive width="250" class="mx-auto mt-4" max-width="250">
                   <v-img max-width="400" src="https://cdn.vuetifyjs.com/store/themes/vite-free/slider.png" />
@@ -545,16 +638,11 @@ onMounted(() => {
                     the framework. Visit our <a href="https://next.vuetifyjs.com/" target="_blank"
                       rel="noopener noreferrer">documentation</a> for more information.
                   </p>
-
                 </v-responsive>
               </v-col>
-
             </v-row>
-
           </v-container>
         </v-sheet>
-
-        <v-pagination v-model="pages" :length="15" :total-visible="7" rounded="0" />
       </section>
       <v-sheet class="py-16">
         <section>

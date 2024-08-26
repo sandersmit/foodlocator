@@ -168,7 +168,8 @@ export const useFoodDataStore = defineStore("FoodDataStore", {
       //fetching fetchFoodCategorie
       return (this.reactiveFoodCuising = await fetch(url, options)
         .then(function (response) {
-         // console.log('api response: ',response.ok)
+         console.log('api response: ',response.ok)
+         console.log('api response: ',response)
           return response.json();
         })
         .catch((error) => {
@@ -282,7 +283,7 @@ export const useFoodDataStore = defineStore("FoodDataStore", {
         apikey: import.meta.env.VITE_endpoint6apikey,
         targetClickedPos: param,
       };
-      //const url = `${import.meta.env.VITE_endpoint6}${params.targetClickedPos}.json?limit=1&${params.apikey}`;
+      const url = `${import.meta.env.VITE_endpoint6}${params.targetClickedPos}.json?limit=1&${params.apikey}`;
       const options = {
         method: "GET",
       };
@@ -291,6 +292,7 @@ export const useFoodDataStore = defineStore("FoodDataStore", {
         .then(function (response) {
           if (response.status === 200) {
             console.log("response.ok:", response.ok);
+            console.log("response", response);
           }
           return response.json();
         })

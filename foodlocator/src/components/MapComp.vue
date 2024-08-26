@@ -15,6 +15,7 @@ interface Props {
   initCoordsProp: number[],
   countryPosDataProp:LatlngIntFace,
   clickedRadiusDataProp: ObjectResults,
+  userAddedDataProp:object,
   clickedPositionDataProp:object
 }
 const props = defineProps<Props>()
@@ -146,7 +147,6 @@ function removeNewMarker() {
 // }
 
 function setClusters() {
-  //console.log('setclusters')
   map.value.flyTo([52.37031805385792, 4.890289306640626], 6);
     //toggle mapstyle
     //isDefaultMapStyle.value ? initMap() : setMapStyle(true)
@@ -248,12 +248,30 @@ async function addMarker(cuisine:CuisineNameType) {
 }
 
 //COMPUTED
+
+// userAddedDataProp
+const computeUserAddedData:ComputedRef<any> = computed  (function() {
+  if (props.userAddedDataProp) {
+    let newArr: string[] = []
+    for (const [key, value] of Object.entries(props.userAddedDataProp)) {
+      console.log(`${key}: ${value.inputlat}`);
+      newArr = [value.inputlat, value.inputlng, value.email,value.location, value.username]
+        if (newArr[0]) {
+          clusterPositions.value.push(newArr)
+        } else {
+          console.log('dont push')
+        }
+      }
+    //return [clusterPositions.value,props.userAddedDataProp]
+    return [clusterPositions.value.flat()]  
+  }
+})
+
 const computeInitCoords:ComputedRef<any> = computed  (function() {
   reactiveCords.coords.latitude = props.reactiveCordsProp.coords.latitude  
   reactiveCords.coords.longitude = props.reactiveCordsProp.coords.longitude  
   return [reactiveCords.coords.latitude,  reactiveCords.coords.longitude]
 })
-
 
 const computeClickedPosition:ComputedRef<any> = computed(function () {
   if (props.clickedPositionDataProp) {
@@ -285,14 +303,13 @@ const computeCurrentCityName = computed(function () {
   posData = Object.values(props.initPosDataProp)
   //console.log(props.initPosDataProp.length, posData[0], Object.values(posData[0])[0])
   return props.initPosDataProp.length > 0 ? Object.values(posData[0])[0] : 'loading..'
-
 })
 
 //WATCH
 watch(computeInitCoords, () => {
   console.log('computeInitCoords')
   console.log('computeInitCoords.value[0], [1]', computeInitCoords.value[0], computeInitCoords.value[1])
-  map.value.flyTo([computeInitCoords.value[0], computeInitCoords.value[1]], 6);
+  map.value.flyTo([computeInitCoords.value[0], computeInitCoords.value[1]], 10);
   //initMap()
 })
 
@@ -306,7 +323,10 @@ watch(computeCurrentCityName, () => {
   console.log('computeCurrentCityName')
   //watching when cityname is loaded, the initMap is fired. 
   computeCurrentCityName.value ? initMap() : 'waiting for name before map loads'   
+})
 
+watch(computeUserAddedData, () => {
+  console.log('computeUserAddedData') 
 })
 
 //DefineExpose
@@ -328,6 +348,7 @@ onMounted(() => {
     <!-- <hr>
     ---------------MAP COMPONENT
     <hr> -->
+    
     <!-- {{ foodDataStore.getCountryPositionData }} -->
     <!-- props.reactiveCordsProp:{{ props.reactiveCordsProp }}<br>
     props.initMapValue:{{ props.initMapValue }}<br> -->
