@@ -129,7 +129,6 @@ export const useFoodDataStore = defineStore("FoodDataStore", {
       return state.reactiveOrigonPosData;
     },
     getCountryPositionData: function (state) {
-      console.log('getCountryPositionData:',state.reactiveCountryPosData)
       return state.reactiveCountryPosData
     },
     getAllCountriesNames: function (state) {
@@ -160,7 +159,7 @@ export const useFoodDataStore = defineStore("FoodDataStore", {
         apikey: import.meta.env.VITE_endpoint1apikey,
         cuisine: param,
       };
-      //const url = import.meta.env.VITE_endpoint1+params.apikey+'&cuisine='+params.cuisine;
+      const url = import.meta.env.VITE_endpoint1+params.apikey+'&cuisine='+params.cuisine;
       const options = {
         method: "GET",
       };
@@ -168,8 +167,6 @@ export const useFoodDataStore = defineStore("FoodDataStore", {
       //fetching fetchFoodCategorie
       return (this.reactiveFoodCuising = await fetch(url, options)
         .then(function (response) {
-         console.log('api response: ',response.ok)
-         console.log('api response: ',response)
           return response.json();
         })
         .catch((error) => {
@@ -200,7 +197,7 @@ export const useFoodDataStore = defineStore("FoodDataStore", {
         apikey: import.meta.env.VITE_endpoint2apikey,
         targetPos: param,
       };
-      //const url =`${import.meta.env.VITE_endpoint2}${params.apikey}&lat=${params.targetPos.coords.latitude}&lon=${params.targetPos.coords.longitude}`;
+      const url =`${import.meta.env.VITE_endpoint2}${params.apikey}&lat=${params.targetPos.coords.latitude}&lon=${params.targetPos.coords.longitude}`;
         const options = {
           method: "GET",
         };
@@ -219,7 +216,7 @@ export const useFoodDataStore = defineStore("FoodDataStore", {
         apikey: import.meta.env.VITE_endpoint3apikey,
         targetParam: param,
       };
-    // const url = `${import.meta.env.VITE_endpoint3}${params.apikey}&query=${params.targetParam}`;
+      const url = `${import.meta.env.VITE_endpoint3}${params.apikey}&query=${params.targetParam}`;
       const options = {
         method: "GET",
       };
@@ -237,8 +234,7 @@ export const useFoodDataStore = defineStore("FoodDataStore", {
         apikey: import.meta.env.VITE_endpoint4apikey,
         targetClickedPos: param,
       };
-      console.log(param)
-     // const url = `${import.meta.env.VITE_endpoint4}${params.apikey}&typehead=false&lat=${params.targetClickedPos.coords.latitude}&lon=${params.targetClickedPos.coords.longitude}&radius=10000`; 
+      const url = `${import.meta.env.VITE_endpoint4}${params.apikey}&typehead=false&lat=${params.targetClickedPos.coords.latitude}&lon=${params.targetClickedPos.coords.longitude}&radius=10000`; 
       const options = {
         method: "GET",
       };
@@ -252,7 +248,7 @@ export const useFoodDataStore = defineStore("FoodDataStore", {
         }));
     },
     async fetchDataCountries() {
-    //  const url = `${import.meta.env.VITE_endpoint7}`;
+      const url = `${import.meta.env.VITE_endpoint7}`;
       const options = {
         method: "POST",
         headers: {

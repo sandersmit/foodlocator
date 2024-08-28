@@ -18,6 +18,12 @@ const foodDataStore = useFoodDataStore();
 //destructure parts of the store
 const { staticStoreGeoPos } = storeToRefs(useFoodDataStore());
 
+const dataFindSelected = reactive({
+  currentIngredientName: "",
+  currentLandOrigin: null,
+  targetCountry: null,
+  currentLandLocation: null
+})
 
 const reactiveCords: ReactiveCordsIntFace = reactive({
   coords: {
@@ -124,7 +130,8 @@ function sendToFirbase(){
     
     //set true to remove markers
     if(mapCompRef.value.isClusterActive){
-      document.querySelector('.v-selection-control__input input').click();
+      let element = document.querySelector('.v-selection-control__input input') as HTMLElement;
+      element.click();
       mapCompRef.value.isClusterActive = true
       mapCompRef.value.setClusters()
     }
@@ -210,14 +217,12 @@ const computeCuisineMenuTitles = computed(function () {
   foodDataStore.getFoodDataByCuisine.forEach(
     element => {
       countrieName = Object.values(element)[1]
-      // console.log(countrieName)
       array.push(countrieName)
     });
   return array
 })
 
 const computeCountryPositionData = computed(function () {
-  console.log("computeCountryPositionData??")
   let array: number[] = [];
   array.length = 0;
   foodDataStore.getCountryPositionData.results.forEach(
@@ -236,21 +241,21 @@ const computeLocationName = computed(function () {
 })
 //WATCH
 watch(computeCoordsBanner, () => {
-  console.log('computeCoordsBanner')
+  // console.log('computeCoordsBanner')
 })
 
 watch(computeCountryPositionData, () => {
-  console.log('computeCountryPositionData')
+  // console.log('computeCountryPositionData')
 })
 
 watch(computeLocationName, () => {
-  console.log('computeLocationName')
+  // console.log('computeLocationName')
 })
 
 
 
 onMounted(() => {
-  // fetchCountries()
+  fetchCountries()
   fetchPostionGeoData(staticStoreGeoPos.value)
   //readFromFirebase()
   // console.log("envLocal: ", envLocal.value)
@@ -362,7 +367,7 @@ onMounted(() => {
             </v-row>
             </v-container>
           </v-responsive>
-            <v-responsive class="overflow-visible py-16" >
+            <v-responsive class="overflow-visible py-16 " >
               <h2 class="text-h4">
                 All agriculture in the netherlands | page {{ pages }}
               </h2>
@@ -378,14 +383,17 @@ onMounted(() => {
                 :label="`Toggle all farmers on the map ${computeIsCluster}`" false-value="no"
                 true-value="yes"></v-switch>
             </v-responsive>
+            <v-pagination v-model="pages" :length="15" :total-visible="7" rounded="0" />
           </v-col>
-          <!-- <v-col cols="auto">
-            <v-responsive class="overflow-visible" width="450">
+          
+          <v-divider class="border-opacity-25 pb-5" ></v-divider>
+          <v-col >
+            <v-responsive class="overflow-visible" width="100%">
               <h2 class="text-h4">
                 Point location to locate nearby agriculture farms
               </h2>
               <p class="mt-5">
-                Click on the map to discover where the nearest agriculture food farms are located. 
+                <span class="mt-5 text-success">Click on the map</span> to discover where the nearest agriculture food farms are located. 
               </p>
                 <p class="mt-5 text-blue-darken-1">
                   Current <span v-if="pointed"> pointed </span> position
@@ -414,12 +422,12 @@ onMounted(() => {
                   </li>
                 </ul>
             </v-responsive>
-          </v-col> -->
+          </v-col>
         </v-row>
       </v-container>
     </section>
-    <v-pagination v-model="pages" :length="15" :total-visible="7" rounded="0" />
-    <!-- <v-sheet class="py-16">
+    
+    <v-sheet class="py-16">
       <section>
         <v-container>
           <v-row justify="space-around">
@@ -483,19 +491,19 @@ onMounted(() => {
           </v-row>
         </v-container>
       </section>
-    </v-sheet> -->
+    </v-sheet>
     <section>
       <v-container>
         <v-row>
           <v-col>
-            <!-- <v-responsive>
+            <v-responsive>
               <div class="countriesTop">
                 <v-btn-alt class="my-6" :disabled="locationUser ? false : true"  @click="toggleCountries()" rel="">
                   {{ !showAllCountries ? 'Show all countries' : 'Hide countries'  }}
                 </v-btn-alt>
-                <v-btn-alt class="my-6" @click="toggleCountries()" rel="">
+                <!-- <v-btn-alt class="my-6" @click="toggleCountries()" rel="">
                   Show all countries
-                </v-btn-alt>
+                </v-btn-alt> -->
                 <a href=""  @click.prevent="scrollPageTo(400)" v-if="!locationUser" class="text-warning my-3 ">Confirm user location</a>
                 <p v-else class="text-success my-3">
                   Total countries: <strong>{{ computeGetCountries ? computeGetCountries.length : 0 }} </strong>
@@ -509,12 +517,12 @@ onMounted(() => {
                   </a>
                 </li>
               </ul>
-            </v-responsive> -->
+            </v-responsive>
           </v-col>
         </v-row>
       </v-container>
     </section>
-    <!-- <v-sheet class="py-16">
+    <v-sheet class="py-16">
       <section>
         <v-container>
           <v-row justify="space-around">
@@ -567,8 +575,7 @@ onMounted(() => {
           </v-row>
         </v-container>
       </section>
-    </v-sheet> -->
-    
+    </v-sheet>
     <v-main class="pt-0">
       <section id="hero">
         <v-sheet class="d-flex align-center py-16" color="grey-darken-3"> 
@@ -576,10 +583,8 @@ onMounted(() => {
             <h2 class="text-h4">
             How it works 
           </h2>
-            <v-row justify="space-between" class="text-center">
-              
-              <v-col cols="auto">
-               
+            <v-row justify="space-between" class="text-center">  
+              <v-col cols="auto">    
                 <v-responsive class="mx-auto mt-4" max-width="250">
                   <v-img max-width="400" src="https://cdn.vuetifyjs.com/store/themes/vite-free/slider.png" />
                   <h3 class="text-h3 mt-4">
@@ -634,16 +639,13 @@ onMounted(() => {
                   <p class="text-success mt-3">
                     Global Defaults
                   </p>
-
                   <strong class="mt-3">
                     Version 3 Only
                   </strong>
-
                   <p class="mt-5">
                     Vuetify 3 has an unprecedented level of customization options that make implementing any design
                     system easy.
                   </p>
-
                   <p class="mt-5">
                     Assign default values for all components in the library, including nested support.
                   </p>
@@ -674,16 +676,13 @@ onMounted(() => {
                   <h2 class="text-h4">
                     Rebuilt from the ground up
                   </h2>
-
                   <p class="text-success mt-3">
                     Composition API
                   </p>
-
                   <p class="mt-3">
                     Vuetify 3 uses the Vue composition API to build easy-to-use and feature rich components that work
                     out of the box.
                   </p>
-
                   <p class="mt-5">
                     <strong>How to use:</strong>
 
@@ -702,10 +701,6 @@ onMounted(() => {
             </v-row>
           </v-container>
         </section>
-
-
-
-
       </v-sheet>
     </v-main>
     <v-footer>
@@ -717,8 +712,6 @@ onMounted(() => {
       </v-container>
     </v-footer>
   </v-app>
-
-
 </template>
 
 <style scoped>

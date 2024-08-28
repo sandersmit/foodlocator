@@ -51,13 +51,11 @@ let reactiveCords:ReactiveCordsIntFace = reactive({
 function initMap() {
   
   if (map.value != null) {
-    console.log('init first remove')
    map.value.remove(); 
    buildMap(true)
     //refactor for dynamic selected cuising from api
     addMarker('african')
   } else {
-    console.log('init fresh')
     buildMap(true)
     //refactor for dynamic selected cuising from api
     addMarker('Thai')
@@ -66,7 +64,6 @@ function initMap() {
 }
 
 function buildMap(zoomAniBoolean:boolean) {
-console.log("computeInitCoords.value",computeInitCoords.value)
 //latlng = ref(L.latLng(computeInitCoords.value))
   //option zoomAnimation:false is manditory setting because of bug. needs fix to set to : true
   map.value = L.map('map', { 
@@ -83,7 +80,6 @@ console.log("computeInitCoords.value",computeInitCoords.value)
   buildmapStat.value = true;
   const contentContainer = document.createElement("div");
   createMarker(contentContainer)
-  console.log('buildMap.. done')
 }
 
 ////////////////////////////
@@ -107,7 +103,6 @@ function addClusterMarkers() {
     // }
     
     clusterPositions.value.forEach(element => {
-      console.log(element[0],element[1], element[2], element[3])
         let title:string = element[2]
         let info:string = element[3]
         let lng:number = element[0]
@@ -152,29 +147,18 @@ function setClusters() {
     //isDefaultMapStyle.value ? initMap() : setMapStyle(true)
   if (!isClusterActive.value) {
     isClusterActive.value = true
-    console.log('addclusters', isClusterActive.value)
     addClusterMarkers()
-    //return isClusterActive.value
   } else {
     isClusterActive.value = false
     console.log('removeclusters', isClusterActive.value)
     removeNewMarker()
-    //return isClusterActive.value
   }
-  //isClusterActive.value ? map.value.addLayer(markers) : 
 }
 
 function onMapClick(e:LatlngClickIntFace) {
-  //let Clickedcoords = e.latlng;
-  //console.log(e)
   reactiveCords.coords.latitude = e.latlng.lat
   reactiveCords.coords.longitude = e.latlng.lng
-  //console.log(reactiveCords)
   emitClickedPos('emit-clicked-position-value', reactiveCords)
-  // setContentPopup(reactiveCords)
-// isDefaultMapStyle.value ? '' : setMapStyle(true)
-
-
 }
 
 function createMarker(contentContainer:HTMLElement) {
@@ -254,12 +238,11 @@ const computeUserAddedData:ComputedRef<any> = computed  (function() {
   if (props.userAddedDataProp) {
     let newArr: string[] = []
     for (const [key, value] of Object.entries(props.userAddedDataProp)) {
-      console.log(`${key}: ${value.inputlat}`);
       newArr = [value.inputlat, value.inputlng, value.email,value.location, value.username]
         if (newArr[0]) {
           clusterPositions.value.push(newArr)
         } else {
-          console.log('dont push')
+          //console.log('dont push')
         }
       }
     //return [clusterPositions.value,props.userAddedDataProp]
@@ -277,7 +260,6 @@ const computeClickedPosition:ComputedRef<any> = computed(function () {
   if (props.clickedPositionDataProp) {
     let cityName;
     cityName = Object.values(props.clickedPositionDataProp)[0].name
-    console.log( typeof props.clickedPositionDataProp, props.clickedPositionDataProp, cityName)
     return cityName;
   }
 })
@@ -294,29 +276,23 @@ const computeMapStyle = computed(function () {
 })
 
 const computeRadiusData:ComputedRef<ObjectResults> = computed(function () {
-  console.log(props.clickedRadiusDataProp)
   return props.clickedRadiusDataProp
 })
 
 const computeCurrentCityName = computed(function () {
   let posData;
   posData = Object.values(props.initPosDataProp)
-  //console.log(props.initPosDataProp.length, posData[0], Object.values(posData[0])[0])
   return props.initPosDataProp.length > 0 ? Object.values(posData[0])[0] : 'loading..'
 })
 
 //WATCH
 watch(computeInitCoords, () => {
-  console.log('computeInitCoords')
-  console.log('computeInitCoords.value[0], [1]', computeInitCoords.value[0], computeInitCoords.value[1])
   map.value.flyTo([computeInitCoords.value[0], computeInitCoords.value[1]], 10);
   //initMap()
 })
 
 watch(computeClickedPosition, () => {
-     console.log('computeClickedPosition')
   setContentPopup()
- 
 })
 
 watch(computeCurrentCityName, () => {
