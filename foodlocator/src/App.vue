@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, reactive, computed, watch, onMounted, ComputedRef } from 'vue';
+import { ref, reactive, computed, watch, onMounted, ComputedRef, watchEffect } from 'vue';
 import { useFoodDataStore } from './stores/DataFoodStore';
 import { storeToRefs } from "pinia";
 
@@ -50,6 +50,57 @@ const locationName = ref()
 const countryName = ref()
 const reactiveRef = ref()
 const distanceRef = ref()
+
+const huisnummerRef = ref()
+const zipcodeRef = ref()
+
+const amountMaxRef:number[] = ref([0,1,2,3])
+
+
+
+//Vuetify
+interface PropsCatInterface {
+  aardappel:boolean,
+  groente:boolean,
+  fruit:boolean,
+  maaltijden:boolean,
+  pizza:boolean,
+  vlees:boolean,
+  vis:boolean,
+  zuivel:boolean,
+  beleg:boolean,
+  snoep:boolean
+}
+
+let reactiveCategories:PropsCatInterface = reactive({
+      aardappel:false,
+      groente:false,
+      fruit:false,
+      maaltijden:false,
+      pizza:false,
+      vlees:false,
+      vis:false,
+      zuivel:false,
+      beleg:false,
+      snoep:false
+})
+
+//max total items per categorie
+let reactiveAmountItems = reactive({
+      totalFooditems1:0,
+      totalFooditems2:0,
+      totalFooditems3:0,
+      totalFooditems4:0,
+})
+
+//max total items per user 
+let reactiveSelectedItems = reactive({
+      totalSelectedItem1:[],
+      totalSelectedItem2:[],
+      totalSelectedItem3:[],
+      totalSelectedItem4:[],
+})
+
 //Vite Env Variables are type:string - convert it to boolean
 //const envLocal = ref(import.meta.env.VITE_env_local)
 
@@ -62,6 +113,10 @@ function emitPositionValue(argument: ReactiveCordsIntFace) {
   reactiveCords.coords.latitude = argument.coords.latitude;
   reactiveCords.coords.longitude = argument.coords.longitude;
   fetchPostionGeoData(emitedValuePropRef.value)
+}
+
+function checkZipRule(){
+ console.log("check?")
 }
 
 function emitCurrentPosition(argument: string) {
@@ -119,23 +174,50 @@ function toggleCountries() {
   showAllCountries.value = !showAllCountries.value
 }
 
+function checkZip() {
+  console.log("checkZip")
+  foodDataStore.fetchPostcode( zipcodeRef.value , huisnummerRef.value )
+}
+
 function sendToFirbase(){
   if( !foodName.value || !locationName.value || !countryName.value ){
     console.log("do nothing");
   }else{
     //computeCountryPositionData
+    console.log(typeof(computeCountryPositionData.value[0]))
     inputLat.value = computeCountryPositionData.value[0]
     inputLng.value = computeCountryPositionData.value[1]
     writeUserData(foodName.value, locationName.value, countryName.value, inputLat.value , inputLng.value  )
     
     //set true to remove markers
-    if(mapCompRef.value.isClusterActive){
+    resetMapOnSubmitUserData()
+  }
+}
+
+//computeAdressCheck
+function sendAddressToFirbase(){
+  if( !computeAdressCheck){
+    console.log("do nothing");
+  }else{
+    //computeCountryPositionData
+    // inputLat.value = computeAdressCheck.geo.lat
+    // inputLng.value = computeAdressCheck.geo.lon
+    //console.log("sendAddressToFirbase:",computeAdressCheck.value.geo.lat)
+    console.log(computeAdressCheck.value.geo.lat, typeof(computeAdressCheck.value.geo.lat))
+    writeUserData(computeAdressCheck.value.street, computeAdressCheck.value.number, computeAdressCheck.value.city, computeAdressCheck.value.geo.lat , computeAdressCheck.value.geo.lon)
+    resetMapOnSubmitUserData()
+    
+  }
+}
+
+function resetMapOnSubmitUserData(){
+  //set true to remove markers
+  if(mapCompRef.value.isClusterActive){
       let element = document.querySelector('.v-selection-control__input input') as HTMLElement;
       element.click();
       mapCompRef.value.isClusterActive = true
       mapCompRef.value.setClusters()
     }
-  }
 }
 
 onValue(dbRef, (snapshot) => {
@@ -239,6 +321,32 @@ const computeLocationName = computed(function () {
    countryName.value? foodDataStore.fetchPositionCountries(countryName.value):'nothing'
    return countryName.value
 })
+
+const computeAdressCheck = computed(function () {
+  return foodDataStore.getAllZipApi.length==0?"no data input":foodDataStore.getAllZipApi
+})
+
+
+
+/// Compute total selected items per user (max 4 categories - 4 items each)
+//computeCat1Selected,computeCat2SelectedcomputeCat3Selected,computeCat4Selected
+const computeCat1Selected = computed(function () {
+  if(reactiveSelectedItems.totalSelectedItem1[0]!=null){
+    reactiveSelectedItems.totalSelectedItem1.length = reactiveAmountItems.totalFooditems1
+  } 
+  return reactiveSelectedItems.totalSelectedItem1[0]!=null ? reactiveSelectedItems.totalSelectedItem1 : "nothing selected"
+})
+
+const computeCat2Selected = computed(function () {
+  if(reactiveSelectedItems.totalSelectedItem2[0]!=null){
+    reactiveSelectedItems.totalSelectedItem2.length = reactiveAmountItems.totalFooditems2
+  } 
+  return reactiveSelectedItems.totalSelectedItem2[0]!=null ? reactiveSelectedItems.totalSelectedItem2 : "nothing selected"
+})
+
+
+
+
 //WATCH
 watch(computeCoordsBanner, () => {
   // console.log('computeCoordsBanner')
@@ -254,9 +362,14 @@ watch(computeLocationName, () => {
 
 
 
+
+
+
+
 onMounted(() => {
-  fetchCountries()
-  fetchPostionGeoData(staticStoreGeoPos.value)
+
+  //fetchCountries()
+  //fetchPostionGeoData(staticStoreGeoPos.value)
   //readFromFirebase()
   // console.log("envLocal: ", envLocal.value)
   // console.log("env message: ", import.meta.env.VITE_env_message)
@@ -295,11 +408,151 @@ onMounted(() => {
       <v-container>
         <v-row justify="space-around">
           <v-col cols="auto">
-            <v-responsive class="overflow-visible">
+            
             <v-form @submit.prevent class="py-10">
               <v-container>
                 <h4 class="text-h5 pb-5">
-                  Insert new location 
+                  Insert new adress | fooddrop
+                </h4>
+                <!-- checkZipRule() -->
+                <v-row>
+                  <v-col cols="3" md="3">
+                    <v-text-field 
+                    
+                    label="Postcode"
+                    v-model="zipcodeRef"
+                    clearable
+                    >
+                  </v-text-field>
+                  </v-col>
+                  <v-col cols="3" md="3">
+                    <v-text-field 
+                    label="Adress nummer"
+                     v-model="huisnummerRef" 
+                     clearable>
+                    </v-text-field>
+                  </v-col>
+                  <v-col cols="3" md="3">
+                    <v-btn type="submit" @click="checkZip" block>Check adress</v-btn>
+                  </v-col>
+                </v-row>
+                <v-row v-if="computeAdressCheck.street">
+                  <v-col cols="4">
+                    <ul >
+                      <li class="text-info">Straat:{{computeAdressCheck.street}} huisnummerRef:{{computeAdressCheck.number}}</li>
+                      <li class="text-info">Postcode:{{computeAdressCheck.postcode}}</li>
+                      <li class="text-info">Stad:{{computeAdressCheck.city}}</li>
+                      <li class="text-info">Lat:{{computeAdressCheck.geo.lat}}</li>
+                      <li class="text-info">Lon:{{computeAdressCheck.geo.lon}}</li>
+                  </ul>
+                 
+                  
+                  <v-divider class="border-opacity-25 my-5" ></v-divider>
+                  <!-- <h3 v-if="computeCat1Selected instanceof Object"> Mandje({{computeCat1Selected.length}})</h3>
+                  <h3 v-else>Mandje({{computeCat1Selected}})</h3> -->
+                  
+                  <ul v-if="computeCat1Selected instanceof Object" v-for="(value, index) in computeCat1Selected">
+                    {{value}} 
+                    </ul>
+                    <ul v-else>
+                      {{"nothing"}} 
+                    </ul>
+                    <ul v-if="computeCat2Selected instanceof Object" v-for="(value, index) in computeCat2Selected">
+                      {{value}} 
+                    </ul>
+                    <ul v-else>
+                      {{computeCat2Selected}} 
+                    </ul>
+                      
+                  </v-col>   
+                  
+                  <v-col cols="8">
+                    <v-card>                    
+                      <v-card-text>
+                          <div class="d-flex pa-4 alig" justify="space-between">
+                            <v-checkbox-btn
+                          label="Maaltijden"
+                            v-model="reactiveCategories.maaltijden"
+                            class="pe-2"
+                          ></v-checkbox-btn>
+                            <v-autocomplete
+                            v-model="reactiveAmountItems.totalFooditems1"
+                            align-right
+                            label="Aantal"
+                            max-width="130"
+                            :disabled="!reactiveCategories.maaltijden"
+                            :items="amountMaxRef"
+                          >
+                          </v-autocomplete>
+                        </div>
+                        <div class="d-flex pa-4"  v-for="(value, index) in reactiveAmountItems.totalFooditems1" >  
+                           <v-combobox
+                            clearable 
+                            label="Selecteer maaltijd"
+                            :disabled="!reactiveCategories.maaltijden"
+                            :items="['Pasta', 'Stampot', 'Salade', 'Ovenschotel']"
+                            v-model="reactiveSelectedItems.totalSelectedItem1[index]">
+                            </v-combobox>                
+                        </div>
+                      </v-card-text>
+                      <v-card-text>
+                        <div class="d-flex pa-4 alig" justify="space-between">
+                          <v-checkbox-btn
+                        label="Zuivel"
+                          v-model="reactiveCategories.zuivel"
+                          class="pe-2"
+                        ></v-checkbox-btn>
+                          <v-autocomplete
+                          v-model="reactiveAmountItems.totalFooditems2"
+                          align-right
+                          label="Aantal"
+                          max-width="130"
+                          :disabled="!reactiveCategories.zuivel"
+                          :items="amountMaxRef"
+                        >
+                        </v-autocomplete>
+                      </div>
+                      <div class="d-flex pa-4"  v-for="(value, index) in reactiveAmountItems.totalFooditems2" >  
+                         <v-combobox
+                          clearable 
+                          label="Selecteer zuivel"
+                          :disabled="!reactiveCategories.zuivel"
+                          :items="['Eieren', 'Kaas', 'Yogurt', 'Melk']"
+                          v-model="reactiveSelectedItems.totalSelectedItem2[index]">
+                          </v-combobox>                
+                      </div>
+                    </v-card-text>
+                    </v-card>
+                  </v-col>
+                  <v-col cols="6">
+                    <v-radio-group inline label="Status of Package">
+                      <v-radio label="Full" value="Full"></v-radio>
+                      <v-radio label="Empty" value="Empty"></v-radio>
+                    </v-radio-group>
+                  </v-col>
+                  <v-col cols="6">
+                    <v-btn type="submit" @click="sendAddressToFirbase" class="my-10" block>Add address</v-btn>
+                    </v-col>
+                </v-row>
+                <v-row v-if="computeAdressCheck.message">
+                  <v-col>  
+                  <ul>
+                    <li class="text-info">Error: {{computeAdressCheck.message}}</li>
+                  </ul> 
+                    <ul  v-for="(value, key, index) in computeAdressCheck.errors">
+                      <li class="text-info">{{key}}: <br>{{value[0]}}</li>
+                    </ul> 
+                  </v-col>
+                  
+                 
+               </v-row>
+              </v-container>
+            </v-form>
+                <v-divider class="border-opacity-25 my-10" ></v-divider>
+                <v-form @submit.prevent class="py-10">
+                  <v-container>
+                <h4 class="text-h5 pb-5">
+                  Insert new location | 411
                 </h4>
                 <v-row>
                   <v-col cols="3" md="3">
@@ -313,8 +566,7 @@ onMounted(() => {
                   <v-col cols="3" md="3">
                     <v-autocomplete clearable label="Land of origin"
                       :items="['California', 'Colorado', 'Florida', 'Georgia', 'Texas', 'Wyoming', 'Enkhuizen', 'Alkmaar', 'Paris']"
-                      v-model="countryName"
-                      
+                      v-model="countryName" 
                      ></v-autocomplete>
                   </v-col>
                   <v-col cols="3" md="3">
@@ -336,14 +588,15 @@ onMounted(() => {
                 </v-row>
                 <v-row>
                   <v-col cols="3" md="3">
-                    <v-btn type="submit" @click="sendToFirbase" block>Submit</v-btn>
+                    <v-btn type="submit" @click="sendToFirbase" block>Submit location info</v-btn>
                   </v-col>
                 </v-row>
+         
               </v-container>
             </v-form>
             <v-divider class="border-opacity-25 pb-5" ></v-divider>
-           
-            <v-container>
+            <v-responsive class="overflow-visible py-16 ">
+            <!-- <v-container>
               <v-row justify="space-between">
               <h3 class="text-h5 pb-5">
                 Current known locations  
@@ -361,11 +614,12 @@ onMounted(() => {
                 <li>Location: {{ value.location }}</li>
                 <li>inputLat: {{ value.inputlat }}</li>
                 <li>inputLng: {{ value.inputlng }}</li>
+               
                 <li><a  href="#html" @click="fetchCountriePosition(value.location)">Show {{value.location}} on map</a></li>
               </ul> 
             </v-col>
             </v-row>
-            </v-container>
+            </v-container> -->
           </v-responsive>
             <v-responsive class="overflow-visible py-16 " >
               <h2 class="text-h4">
@@ -534,10 +788,10 @@ onMounted(() => {
                       Select food based on nationality
                     </h4>
                     <v-row>
-                      <v-col cols="12" md="12">
+                      <!-- <v-col cols="12" md="12">
                         <v-autocomplete clearable label="Land of origin" :items="foodDataStore.reactiveCurrentCuisines"
                           v-model="dataFindSelected.currentLandOrigin"></v-autocomplete>
-                      </v-col>
+                      </v-col> -->
                     </v-row>
                     <v-row>
                       <v-col cols="12" md="12">

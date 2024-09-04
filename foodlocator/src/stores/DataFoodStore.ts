@@ -101,7 +101,8 @@ export const useFoodDataStore = defineStore("FoodDataStore", {
       reactviefoodOrigin: [],
       reactiveCountrieData: {} as ObjDataCountries,
       allCountryNames: [] as object[],
-      allCountryInfoObj: [] as string[]
+      allCountryInfoObj: [] as string[],
+      reactiveZipData:[]
     };
   },
   //Getters are synchronous functions used to retrieve data from the state
@@ -149,6 +150,10 @@ export const useFoodDataStore = defineStore("FoodDataStore", {
         return state.reactiveCountrieData.data;
       }
         
+    },
+    getAllZipApi: function (state) {
+      console.log("state.reactiveZipData",state.reactiveZipData)
+      return state.reactiveZipData; 
     },
   },
   //Actions are functions that can also be asynchronous which are used to update the state
@@ -216,7 +221,7 @@ export const useFoodDataStore = defineStore("FoodDataStore", {
         apikey: import.meta.env.VITE_endpoint3apikey,
         targetParam: param,
       };
-      const url = `${import.meta.env.VITE_endpoint3}${params.apikey}&query=${params.targetParam}`;
+      //const url = `${import.meta.env.VITE_endpoint3}${params.apikey}&query=${params.targetParam}`;
       const options = {
         method: "GET",
       };
@@ -234,7 +239,7 @@ export const useFoodDataStore = defineStore("FoodDataStore", {
         apikey: import.meta.env.VITE_endpoint4apikey,
         targetClickedPos: param,
       };
-      const url = `${import.meta.env.VITE_endpoint4}${params.apikey}&typehead=false&lat=${params.targetClickedPos.coords.latitude}&lon=${params.targetClickedPos.coords.longitude}&radius=10000`; 
+      //const url = `${import.meta.env.VITE_endpoint4}${params.apikey}&typehead=false&lat=${params.targetClickedPos.coords.latitude}&lon=${params.targetClickedPos.coords.longitude}&radius=10000`; 
       const options = {
         method: "GET",
       };
@@ -248,7 +253,7 @@ export const useFoodDataStore = defineStore("FoodDataStore", {
         }));
     },
     async fetchDataCountries() {
-      const url = `${import.meta.env.VITE_endpoint7}`;
+      //const url = `${import.meta.env.VITE_endpoint7}`;
       const options = {
         method: "POST",
         headers: {
@@ -279,12 +284,41 @@ export const useFoodDataStore = defineStore("FoodDataStore", {
         apikey: import.meta.env.VITE_endpoint6apikey,
         targetClickedPos: param,
       };
-      const url = `${import.meta.env.VITE_endpoint6}${params.targetClickedPos}.json?limit=1&${params.apikey}`;
+      //const url = `${import.meta.env.VITE_endpoint6}${params.targetClickedPos}.json?limit=1&${params.apikey}`;
       const options = {
         method: "GET",
       };
 
       return (this.reactiveCountryPosData = await fetch(url, options)
+        .then(function (response) {
+          if (response.status === 200) {
+            console.log("response.ok:", response.ok);
+            console.log("response", response);
+          }
+          return response.json();
+        })
+        .catch((error) => {
+          //request failed
+          console.log("error", error);
+        }));
+    },
+    async fetchPostcode(param1, param2) {
+      console.log('fetchPostcode',param1,param2)
+      const params = {
+        apikey: import.meta.env.VITE_endpoint8apikey,
+        zipcode: param1,
+        number: param2,
+      };
+      const url = `${import.meta.env.VITE_endpoint8}postcode=${params.zipcode}&number=${params.number}`;
+      const options = {
+        method: "GET",
+        headers: {
+          'Authorization': params.apikey
+        }
+
+      };
+
+      return (this.reactiveZipData = await fetch(url, options)
         .then(function (response) {
           if (response.status === 200) {
             console.log("response.ok:", response.ok);
